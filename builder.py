@@ -217,19 +217,20 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
         m = _sqlmetric(chart["metric"], sid, 0)
         gbspec = chart["groupby"]
         ydim = gbspec[0] if isinstance(gbspec, list) else gbspec
+        hm_rl = chart.get("row_limit", 10000)
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
             "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
             "extras": {"time_grain_sqla": "PT1H", "having": "", "where": ""}, "applied_time_extras": {},
             "columns": [{"timeGrain": "PT1H", "columnType": "BASE_AXIS", "sqlExpression": "__time",
                          "label": "__time", "expressionType": "SQL"}, ydim],
-            "metrics": [m], "orderby": [], "annotation_layers": [], "row_limit": 10000, "series_limit": 0,
+            "metrics": [m], "orderby": [], "annotation_layers": [], "row_limit": hm_rl, "series_limit": 0,
             "order_desc": True, "url_params": {}, "custom_params": {}, "custom_form_data": {},
             "post_processing": [{"operation": "rank", "options": {"metric": _mlabel(m)}}]}],
             "form_data": {**base, "viz_type": "heatmap_v2", "x_axis": "__time", "time_grain_sqla": "PT1H",
-                          "groupby": ydim, "metric": m, "adhoc_filters": afilt, "row_limit": 10000},
+                          "groupby": ydim, "metric": m, "adhoc_filters": afilt, "row_limit": hm_rl},
             "result_format": "json", "result_type": "full"}
         p = {**base, "viz_type": "heatmap_v2", "x_axis": "__time", "time_grain_sqla": "PT1H", "groupby": ydim,
-             "metric": m, "adhoc_filters": afilt, "row_limit": 10000, "normalize_across": "heatmap",
+             "metric": m, "adhoc_filters": afilt, "row_limit": hm_rl, "normalize_across": "heatmap",
              "legend_type": "continuous", "linear_color_scheme": "acxSequential", "xscale_interval": -1,
              "yscale_interval": -1, "left_margin": "auto", "bottom_margin": "auto", "value_bounds": [None, None],
              "y_axis_format": chart.get("format", "SMART_NUMBER"), "x_axis_time_format": "smart_date",
