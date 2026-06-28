@@ -7,7 +7,7 @@
       "name": "binnedSessions", "display": "Client Info and Statistics", "datasource_id": 8,
       "dataset_uuid": "a2c88500-9874-45bd-bcad-f86ba821febd",
       "metrics": ["User Traffic (Total)", "User Traffic (Downlink)", "User Traffic (Uplink)", "Unique Client MAC Count", "AP Count", "Client Throughput", "Avg RSS", "Max RSS", "Min RSS", "Avg SNR", "Max SNR", "Min SNR", "Avg Noise Floor", "Tx Client MCS Rate", "Rx Client MCS Rate", "Tx PER"],
-      "dims": ["clientMac", "osType", "deviceType", "manufacturer", "osVendorType", "ssid", "clientVlan", "zoneName", "apName", "apMac", "radio", "encryption", "authMethod"],
+      "dims": ["clientMac", "osType", "deviceType", "manufacturer", "osVendorType", "ssid", "clientVlan", "zoneName", "apName", "apMac", "radio", "band", "encryption", "authMethod"],
       "notes": "Richest client dataset. radio values '2.4'/'5'. zoneName = Venue. RF-quality + throughput-estimate metrics live here."
     },
     {
@@ -55,9 +55,9 @@
       "name": "mlisa-apConnectionStats", "display": "Client Connection Counts", "datasource_id": 9,
       "dataset_uuid": "bef37bbc-c3f2-4b77-b6c4-1eb816ac48a4",
       "metrics": ["Success Count", "Failure Count", "Attempt Count"],
-      "dims": ["apMac"],
+      "dims": ["apMac", "metric"],
       "raw_columns": {"Success Count": "successCount", "Failure Count": "failureCount", "Attempt Count": "attemptCount"},
-      "notes": "Onboarding success. Success Rate % = custom SQL '1.0 * SUM(successCount) / SUM(attemptCount)' with .1% format."
+      "notes": "Onboarding. Success Rate % = custom SQL '1.0 * SUM(successCount) / SUM(attemptCount)' with .1% format. The 'metric' dim (display 'Connection Stage') = the connection pipeline stages: assoc, auth, eap, radius, dhcp, l3-auth, anqp. Funnel/bar by 'metric' with Success or Failure Count = the onboarding stage view (failure-by-stage pinpoints where clients drop)."
     },
     {
       "name": "mlisa-clientConnectionStats", "display": "Client Connection Events", "datasource_id": 3,

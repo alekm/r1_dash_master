@@ -11,6 +11,12 @@
       {"type": "bignum", "dataset": "sessionsSummary", "title": "Avg Session Duration", "width": 3, "metric": "Avg Session Duration"}
     ],
     [
+      {"_comment": "Venue table near the TOP: click a venue to cross-filter the whole dashboard.",
+       "type": "table", "dataset": "binnedSessions", "title": "Venues - Traffic & Clients (click to filter)", "width": 12,
+       "groupby": ["zoneName"], "metrics": ["User Traffic (Total)", "Unique Client MAC Count"],
+       "percent_of_total": ["User Traffic (Total)"], "row_limit": 25}
+    ],
+    [
       {"type": "line", "dataset": "mlisa-apConnectionStats", "title": "Connection Attempts - Success vs Failure", "width": 6,
        "metrics": ["Success Count", "Failure Count"]},
       {"type": "line", "dataset": "mlisa-apConnectionStats", "title": "Connection Success Rate Over Time", "width": 6,
@@ -23,15 +29,10 @@
        "metric": "Traffic (Total)", "groupby": ["category"]}
     ],
     [
-      {"type": "line", "dataset": "binnedSessions", "title": "5 GHz Traffic Trend (filtered)", "width": 6,
-       "metrics": ["User Traffic (Total)"], "filter": ["radio", "5"]},
-      {"type": "line", "dataset": "binnedSessions", "title": "Throughput by Band", "width": 6,
-       "metrics": ["User Traffic (Total)"], "groupby": ["radio"]}
-    ],
-    [
-      {"type": "table", "dataset": "binnedSessions", "title": "Top Venues - Traffic & Clients", "width": 12,
-       "groupby": ["zoneName"], "metrics": ["User Traffic (Total)", "Unique Client MAC Count"],
-       "percent_of_total": ["User Traffic (Total)"], "row_limit": 25}
+      {"type": "bar", "dataset": "binnedSessions", "title": "Throughput by Band (stacked)", "width": 6,
+       "metrics": ["User Traffic (Total)"], "groupby": ["radio"], "stacked": true},
+      {"type": "heatmap", "dataset": "binnedSessions", "title": "Traffic Heatmap (venue x time)", "width": 6,
+       "metric": "User Traffic (Total)", "groupby": ["zoneName"]}
     ]
   ]
 }

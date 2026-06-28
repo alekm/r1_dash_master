@@ -1,0 +1,22 @@
+{
+  "title": "Chart Gallery",
+  "tenant_id": "76389fd2c4294497a2fadd6756857de7",
+  "time_range": "Last week",
+  "rows": [
+    [
+      {"type": "bignum_trend", "dataset": "binnedSessions", "title": "Unique Clients (trend)", "width": 4, "metric": "Unique Client MAC Count"},
+      {"type": "gauge", "dataset": "mlisa-apConnectionStats", "title": "Success Rate Gauge", "width": 4,
+       "metric": {"sql": "100.0 * SUM(successCount) / SUM(attemptCount)", "label": "Success Rate"}}
+    ],
+    [
+      {"type": "bar", "dataset": "binnedSessions", "title": "Traffic by Band (stacked bar)", "width": 6,
+       "metrics": ["User Traffic (Total)"], "groupby": ["radio"], "stacked": true},
+      {"type": "area", "dataset": "binnedAvc", "title": "Traffic by Category (area)", "width": 6,
+       "metrics": ["Traffic (Total)"], "groupby": ["category"], "stacked": true}
+    ],
+    [
+      {"type": "heatmap", "dataset": "binnedSessions", "title": "Traffic Heatmap (venue x time)", "width": 12,
+       "metric": "User Traffic (Total)", "groupby": ["zoneName"]}
+    ]
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "title": "Connection Health",
+  "tenant_id": "76389fd2c4294497a2fadd6756857de7",
+  "time_range": "Last week",
+  "rows": [
+    [
+      {"type": "bignum", "dataset": "mlisa-apConnectionStats", "title": "Success Rate", "width": 4,
+       "metric": {"sql": "1.0 * SUM(successCount) / SUM(attemptCount)", "label": "Success Rate"}, "format": ".1%"},
+      {"type": "bignum", "dataset": "mlisa-apConnectionStats", "title": "Total Attempts", "width": 4, "metric": "Attempt Count"},
+      {"type": "bignum", "dataset": "mlisa-apConnectionStats", "title": "Total Failures", "width": 4, "metric": "Failure Count"}
+    ],
+    [
+      {"type": "funnel", "dataset": "mlisa-apConnectionStats", "title": "Onboarding Funnel by Stage", "width": 6,
+       "metric": "Success Count", "groupby": ["metric"]},
+      {"type": "bar", "dataset": "mlisa-apConnectionStats", "title": "Failures by Stage (where clients drop)", "width": 6,
+       "metrics": ["Failure Count"], "x": "metric"}
+    ],
+    [
+      {"type": "line", "dataset": "mlisa-apConnectionStats", "title": "Success Rate Over Time", "width": 12,
+       "metrics": [{"sql": "1.0 * SUM(successCount) / SUM(attemptCount)", "label": "Success Rate"}], "format": ".1%"}
+    ]
+  ]
+}

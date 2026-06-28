@@ -119,36 +119,122 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
              "conditional_formatting": []}
         return "big_number_total", p, qc
 
-    if typ == "line":
+    if typ in ("line", "bar", "area", "scatter"):
+        viz = {"line": "echarts_timeseries_line", "bar": "echarts_timeseries_bar",
+               "area": "echarts_area", "scatter": "echarts_timeseries_scatter"}[typ]
         ms = [_sqlmetric(m, sid, i) for i, m in enumerate(chart["metrics"])]
         gb = chart.get("groupby", [])
         piv = {_mlabel(m): {"operator": "mean"} for m in ms}
+        xcol = chart.get("x")  # optional dimension x-axis (default: time)
+        if xcol:
+            base_axis = {"columnType": "BASE_AXIS", "sqlExpression": xcol, "label": xcol, "expressionType": "SQL"}
+            xaxis, index, qextras = xcol, [xcol], {"having": "", "where": ""}
+        else:
+            base_axis = {"timeGrain": "PT1H", "columnType": "BASE_AXIS", "sqlExpression": "__time",
+                         "label": "__time", "expressionType": "SQL"}
+            xaxis, index, qextras = "__time", ["__time"], {"time_grain_sqla": "PT1H", "having": "", "where": ""}
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
             "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
-            "extras": {"time_grain_sqla": "PT1H", "having": "", "where": ""}, "applied_time_extras": {},
-            "columns": [{"timeGrain": "PT1H", "columnType": "BASE_AXIS", "sqlExpression": "__time",
-                         "label": "__time", "expressionType": "SQL"}] + list(gb),
+            "extras": qextras, "applied_time_extras": {},
+            "columns": [base_axis] + list(gb),
             "metrics": ms, "orderby": [[ms[0], False]], "annotation_layers": [], "row_limit": 10000,
             "series_columns": gb, "series_limit": 0, "order_desc": True, "url_params": {},
             "custom_params": {}, "custom_form_data": {}, "time_offsets": [],
-            "post_processing": [{"operation": "pivot", "options": {"index": ["__time"], "columns": gb,
+            "post_processing": [{"operation": "pivot", "options": {"index": index, "columns": gb,
                                 "aggregates": piv, "drop_missing_columns": False}}, {"operation": "flatten"}]}],
-            "form_data": {**base, "viz_type": "echarts_timeseries_line", "x_axis": "__time",
-                          "time_grain_sqla": "PT1H", "metrics": ms, "groupby": gb, "adhoc_filters": afilt,
-                          "row_limit": 10000, "color_scheme": "acxColor", "seriesType": "line",
+            "form_data": {**base, "viz_type": viz, "x_axis": xaxis,
+                          "metrics": ms, "groupby": gb, "adhoc_filters": afilt,
+                          "row_limit": 10000, "color_scheme": "acxColor",
                           "show_legend": True, "y_axis_format": chart.get("format", "SMART_NUMBER")},
             "result_format": "json", "result_type": "full"}
-        p = {**base, "viz_type": "echarts_timeseries_line", "x_axis": "__time", "time_grain_sqla": "PT1H",
+        if not xcol:
+            qc["form_data"]["time_grain_sqla"] = "PT1H"
+        p = {**base, "viz_type": viz, "x_axis": xaxis,
              "x_axis_sort_asc": True, "x_axis_sort_series": "name", "x_axis_sort_series_ascending": True,
              "metrics": ms, "groupby": gb, "adhoc_filters": afilt, "order_desc": True, "row_limit": 10000,
              "truncate_metric": True, "show_empty_columns": True, "comparison_type": "values",
-             "annotation_layers": [], "color_scheme": "acxColor", "seriesType": "line",
-             "only_total": (len(gb) == 0), "opacity": 0.2, "markerSize": 6, "show_legend": True,
+             "annotation_layers": [], "color_scheme": "acxColor",
+             "only_total": (len(gb) == 0), "show_legend": True,
              "legendType": "scroll", "legendOrientation": "top", "x_axis_time_format": "smart_date",
              "rich_tooltip": True, "showTooltipTotal": True,
              "y_axis_format": chart.get("format", "SMART_NUMBER"), "truncateXAxis": True,
              "y_axis_bounds": [None, None]}
-        return "echarts_timeseries_line", p, qc
+        if not xcol:
+            p["time_grain_sqla"] = "PT1H"
+        if typ in ("line", "area"):
+            p["seriesType"] = "line"; p["markerSize"] = 6; p["opacity"] = 0.2
+        if typ == "scatter":
+            p["markerSize"] = 6
+        if typ == "bar":
+            p["orientation"] = "vertical"; p["sort_series_type"] = "sum"
+        if chart.get("stacked"):
+            p["stack"] = "Stack"; qc["form_data"]["stack"] = "Stack"
+        return viz, p, qc
+
+    if typ == "bignum_trend":
+        m = _sqlmetric(chart["metric"], sid, 0)
+        qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "extras": {"time_grain_sqla": "PT1H", "having": "", "where": ""}, "applied_time_extras": {},
+            "columns": [{"timeGrain": "PT1H", "columnType": "BASE_AXIS", "sqlExpression": "__time",
+                         "label": "__time", "expressionType": "SQL"}],
+            "metrics": [m], "annotation_layers": [], "series_limit": 0, "order_desc": True,
+            "url_params": {}, "custom_params": {}, "custom_form_data": {},
+            "post_processing": [{"operation": "pivot", "options": {"index": ["__time"], "columns": [],
+                                "aggregates": {_mlabel(m): {"operator": "mean"}}, "drop_missing_columns": True}},
+                                {"operation": "flatten"}]}],
+            "form_data": {**base, "viz_type": "big_number", "x_axis": "__time", "time_grain_sqla": "PT1H",
+                          "metric": m, "adhoc_filters": afilt, "show_timestamp": True, "show_trend_line": True,
+                          "start_y_axis_at_zero": True, "header_font_size": 0.4, "subheader_font_size": 0.15,
+                          "y_axis_format": chart.get("format", "SMART_NUMBER"), "time_format": "smart_date"},
+            "result_format": "json", "result_type": "full"}
+        p = {**base, "viz_type": "big_number", "x_axis": "__time", "time_grain_sqla": "PT1H", "metric": m,
+             "adhoc_filters": afilt, "show_timestamp": True, "show_trend_line": True, "start_y_axis_at_zero": True,
+             "color_picker": {"r": 102, "g": 177, "b": 232, "a": 1}, "header_font_size": 0.4,
+             "subheader_font_size": 0.15, "y_axis_format": chart.get("format", "SMART_NUMBER"),
+             "time_format": "smart_date", "rolling_type": "None", "rolling_periods": 12, "min_periods": 8}
+        return "big_number", p, qc
+
+    if typ == "gauge":
+        m = _sqlmetric(chart["metric"], sid, 0)
+        gb = chart.get("groupby", [])
+        qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "extras": {"having": "", "where": ""}, "applied_time_extras": {}, "columns": gb,
+            "metrics": [m], "annotation_layers": [], "row_limit": chart.get("row_limit", 10),
+            "series_limit": 0, "order_desc": True, "url_params": {}, "custom_params": {}, "custom_form_data": {}}],
+            "form_data": {**base, "viz_type": "gauge_chart", "groupby": gb, "metric": m, "adhoc_filters": afilt,
+                          "row_limit": chart.get("row_limit", 10)},
+            "result_format": "json", "result_type": "full"}
+        p = {**base, "viz_type": "gauge_chart", "groupby": gb, "metric": m, "adhoc_filters": afilt,
+             "row_limit": chart.get("row_limit", 10), "start_angle": 225, "end_angle": -45,
+             "color_scheme": "acxColor", "font_size": 15, "number_format": chart.get("format", "SMART_NUMBER"),
+             "value_formatter": "{value}", "show_pointer": True, "animation": True, "split_number": 10,
+             "show_progress": True, "overlap": True}
+        return "gauge_chart", p, qc
+
+    if typ == "heatmap":
+        m = _sqlmetric(chart["metric"], sid, 0)
+        gbspec = chart["groupby"]
+        ydim = gbspec[0] if isinstance(gbspec, list) else gbspec
+        qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "extras": {"time_grain_sqla": "PT1H", "having": "", "where": ""}, "applied_time_extras": {},
+            "columns": [{"timeGrain": "PT1H", "columnType": "BASE_AXIS", "sqlExpression": "__time",
+                         "label": "__time", "expressionType": "SQL"}, ydim],
+            "metrics": [m], "orderby": [], "annotation_layers": [], "row_limit": 10000, "series_limit": 0,
+            "order_desc": True, "url_params": {}, "custom_params": {}, "custom_form_data": {},
+            "post_processing": [{"operation": "rank", "options": {"metric": _mlabel(m)}}]}],
+            "form_data": {**base, "viz_type": "heatmap_v2", "x_axis": "__time", "time_grain_sqla": "PT1H",
+                          "groupby": ydim, "metric": m, "adhoc_filters": afilt, "row_limit": 10000},
+            "result_format": "json", "result_type": "full"}
+        p = {**base, "viz_type": "heatmap_v2", "x_axis": "__time", "time_grain_sqla": "PT1H", "groupby": ydim,
+             "metric": m, "adhoc_filters": afilt, "row_limit": 10000, "normalize_across": "heatmap",
+             "legend_type": "continuous", "linear_color_scheme": "acxSequential", "xscale_interval": -1,
+             "yscale_interval": -1, "left_margin": "auto", "bottom_margin": "auto", "value_bounds": [None, None],
+             "y_axis_format": chart.get("format", "SMART_NUMBER"), "x_axis_time_format": "smart_date",
+             "show_legend": True, "show_percentage": True}
+        return "heatmap_v2", p, qc
 
     if typ == "pie":
         m = _sqlmetric(chart["metric"], sid, 0)
@@ -190,6 +276,96 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
              "row_limit": chart.get("row_limit", 50), "server_pagination": True, "order_desc": True,
              "table_timestamp_format": "smart_date", "color_scheme": "acxColor"}
         return "table", p, qc
+
+    if typ == "funnel":
+        m = _sqlmetric(chart["metric"], sid, 0)
+        gb = chart.get("groupby", [])
+        qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "extras": {"having": "", "where": ""}, "applied_time_extras": {}, "columns": gb,
+            "metrics": [m], "annotation_layers": [], "row_limit": chart.get("row_limit", 10),
+            "series_limit": 0, "order_desc": True, "url_params": {}, "custom_params": {}, "custom_form_data": {}}],
+            "form_data": {**base, "viz_type": "funnel", "groupby": gb, "metric": m, "adhoc_filters": afilt,
+                          "row_limit": chart.get("row_limit", 10)},
+            "result_format": "json", "result_type": "full"}
+        p = {**base, "viz_type": "funnel", "groupby": gb, "metric": m, "adhoc_filters": afilt,
+             "row_limit": chart.get("row_limit", 10), "sort_by_metric": True, "percent_calculation_type": "total",
+             "color_scheme": "acxColor", "show_legend": True, "legendOrientation": "top", "tooltip_label_type": 5,
+             "number_format": chart.get("format", "SMART_NUMBER"), "show_labels": True, "show_tooltip_labels": True}
+        return "funnel", p, qc
+
+    if typ == "pivot":
+        ms = [_sqlmetric(m, sid, i) for i, m in enumerate(chart["metrics"])]
+        rows = chart.get("rows", [])
+        cols = chart.get("columns", [])
+        qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "extras": {"having": "", "where": ""}, "applied_time_extras": {}, "columns": cols + rows,
+            "metrics": ms, "annotation_layers": [], "row_limit": chart.get("row_limit", 10000),
+            "series_limit": 0, "order_desc": True, "url_params": {}, "custom_params": {}, "custom_form_data": {}}],
+            "form_data": {**base, "viz_type": "pivot_table_v2", "groupbyColumns": cols, "groupbyRows": rows,
+                          "metrics": ms, "metricsLayout": "COLUMNS", "adhoc_filters": afilt,
+                          "row_limit": chart.get("row_limit", 10000), "aggregateFunction": "Sum"},
+            "result_format": "json", "result_type": "full"}
+        p = {**base, "viz_type": "pivot_table_v2", "groupbyColumns": cols, "groupbyRows": rows,
+             "temporal_columns_lookup": {"__time": True}, "metrics": ms, "metricsLayout": "COLUMNS",
+             "adhoc_filters": afilt, "row_limit": chart.get("row_limit", 10000), "order_desc": True,
+             "aggregateFunction": "Sum", "valueFormat": chart.get("format", "SMART_NUMBER"),
+             "date_format": "smart_date", "rowOrder": "key_a_to_z", "colOrder": "key_a_to_z", "allow_render_html": True}
+        return "pivot_table_v2", p, qc
+
+    if typ == "mixed":
+        ms = [_sqlmetric(m, sid, i) for i, m in enumerate(chart["metrics"])]
+        msb = [_sqlmetric(m, sid, 50 + i) for i, m in enumerate(chart.get("metrics_b", []))]
+        gb = chart.get("groupby", [])
+        gbb = chart.get("groupby_b", [])
+
+        def _q(metrics, groupby, drop):
+            return {"filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+                    "extras": {"time_grain_sqla": "PT1H", "having": "", "where": ""}, "applied_time_extras": {},
+                    "columns": [{"columnType": "BASE_AXIS", "sqlExpression": "__time", "label": "__time",
+                                 "expressionType": "SQL"}] + list(groupby),
+                    "metrics": metrics, "orderby": ([[metrics[0], False]] if metrics else []),
+                    "annotation_layers": [], "row_limit": 10000, "series_columns": groupby, "series_limit": 0,
+                    "order_desc": True, "url_params": {}, "custom_params": {}, "custom_form_data": {}, "time_offsets": [],
+                    "post_processing": [{"operation": "pivot", "options": {"index": ["__time"], "columns": groupby,
+                                        "aggregates": {_mlabel(m): {"operator": "mean"} for m in metrics},
+                                        "drop_missing_columns": drop}}, {"operation": "flatten"}]}
+        qc = {"datasource": {"id": n, "type": "table"}, "force": False,
+              "queries": [_q(ms, gb, False), _q(msb, gbb, True)],
+              "form_data": {**base, "viz_type": "mixed_timeseries", "x_axis": "__time", "metrics": ms,
+                            "groupby": gb, "metrics_b": msb, "groupby_b": gbb, "adhoc_filters": afilt,
+                            "adhoc_filters_b": afilt},
+              "result_format": "json", "result_type": "full"}
+        p = {**base, "viz_type": "mixed_timeseries", "x_axis": "__time", "metrics": ms, "groupby": gb,
+             "adhoc_filters": afilt, "order_desc": True, "row_limit": 10000, "truncate_metric": True,
+             "comparison_type": "values", "metrics_b": msb, "groupby_b": gbb, "adhoc_filters_b": afilt,
+             "order_desc_b": True, "row_limit_b": 10000, "truncate_metric_b": True, "comparison_type_b": "values",
+             "annotation_layers": [], "color_scheme": "acxColor", "seriesType": "bar", "opacity": 0.6,
+             "markerSize": 6, "seriesTypeB": "line", "opacityB": 0.2, "markerSizeB": 6, "show_legend": True,
+             "legendType": "scroll", "legendOrientation": "top", "x_axis_time_format": "smart_date",
+             "rich_tooltip": True, "showTooltipTotal": True, "y_axis_format": chart.get("format", "SMART_NUMBER"),
+             "y_axis_format_secondary": chart.get("format_b", "SMART_NUMBER"), "y_axis_bounds": [None, None],
+             "y_axis_bounds_secondary": [None, None]}
+        return "mixed_timeseries", p, qc
+
+    if typ == "tree":
+        m = _sqlmetric(chart["metric"], sid, 0)
+        idc, parc = chart["id"], chart["parent"]
+        namec = chart.get("name", idc)
+        qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "extras": {"having": "", "where": ""}, "applied_time_extras": {}, "columns": [idc, parc, namec],
+            "metrics": [m], "annotation_layers": [], "row_limit": chart.get("row_limit", 100),
+            "series_limit": 0, "order_desc": True, "url_params": {}, "custom_params": {}, "custom_form_data": {}}],
+            "form_data": {**base, "viz_type": "tree_chart", "id": idc, "parent": parc, "name": namec,
+                          "metric": m, "adhoc_filters": afilt, "row_limit": chart.get("row_limit", 100)},
+            "result_format": "json", "result_type": "full"}
+        p = {**base, "viz_type": "tree_chart", "id": idc, "parent": parc, "name": namec, "metric": m,
+             "adhoc_filters": afilt, "row_limit": chart.get("row_limit", 100), "layout": "orthogonal",
+             "orient": "LR", "node_label_position": "left", "child_label_position": "bottom",
+             "emphasis": "descendant", "symbol": "emptyCircle", "symbolSize": 7, "roam": True}
+        return "tree_chart", p, qc
 
     raise ValueError(f"unknown chart type: {typ!r}")
 
@@ -241,17 +417,25 @@ def validate_spec(spec, catalog):
                 problems.append(f"{loc}: unknown dataset {ch.get('dataset')!r}")
                 continue
             mset, dset = set(ds["metrics"]), set(ds["dims"])
-            metrics = ch.get("metrics", []) + ([ch["metric"]] if ch.get("metric") else []) + ch.get("percent_of_total", [])
+            metrics = (ch.get("metrics", []) + ([ch["metric"]] if ch.get("metric") else [])
+                       + ch.get("percent_of_total", []) + ch.get("metrics_b", []))
             for m in metrics:
                 if isinstance(m, str) and m not in mset:
                     problems.append(f"{loc}: metric {m!r} not in {ds['name']} (have: {sorted(mset)[:6]}...)")
-            for col in ch.get("groupby", []):
+            dims_used = (list(ch.get("groupby", [])) + list(ch.get("groupby_b", []))
+                         + list(ch.get("rows", [])) + list(ch.get("columns", [])))
+            for k in ("id", "parent", "name", "x"):
+                if ch.get(k):
+                    dims_used.append(ch[k])
+            for col in dims_used:
                 if col not in dset:
-                    problems.append(f"{loc}: groupby {col!r} not a dim of {ds['name']}")
+                    problems.append(f"{loc}: dimension {col!r} not a dim of {ds['name']}")
             for col, _ in _norm_filters(ch):
                 if col not in dset:
                     problems.append(f"{loc}: filter col {col!r} not a dim of {ds['name']}")
-            if ch.get("type") not in ("bignum", "line", "pie", "table"):
+            if ch.get("type") not in ("bignum", "bignum_trend", "line", "bar", "area", "scatter",
+                                       "pie", "table", "gauge", "heatmap", "funnel", "pivot",
+                                       "mixed", "tree"):
                 problems.append(f"{loc}: bad type {ch.get('type')!r}")
     return problems
 

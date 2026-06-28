@@ -32,7 +32,13 @@ field names.
 Chart:
 ```jsonc
 {
-  "type": "bignum" | "line" | "pie" | "table",
+  "type": "bignum" | "bignum_trend" | "line" | "bar" | "area" | "scatter" | "pie" | "table"
+         | "gauge" | "heatmap" | "funnel" | "pivot" | "mixed" | "tree",
+  "stacked": true,                       // bar/area only: stack the series
+  // pivot:  "rows": ["zoneName"], "columns": ["radio"], "metrics": [...]
+  // mixed:  "metrics": [...] (bars) + "metrics_b": [...] (line) + optional "groupby"/"groupby_b","format_b"
+  // tree:   "id": "apName", "parent": "apModel", "name": "apName", "metric": "..."
+  // funnel/gauge/heatmap: "metric" (singular) + "groupby" ([dim]; heatmap uses first dim as Y)
   "dataset": "binnedSessions",          // internal name from list_datasets
   "title": "...", "width": 1-12,
   "metric":  "User Traffic (Total)"     // bignum/pie; string = saved metric
@@ -46,6 +52,14 @@ Chart:
   "row_limit": 25
 }
 ```
+
+## Layout & cross-filtering (design convention)
+
+Data Studio dashboards are **cross-filterable**: clicking a value in any chart (e.g. a
+venue in a venue table) filters the *entire* dashboard to that value; clearing it up top
+removes the filter. So **put venue and AP tables/charts near the TOP** — they double as
+interactive filter controls. Recommended order: KPI row → venue (and AP) table → detail
+charts below. The builder preserves row order from the spec, so order your `rows` that way.
 
 ## Grammar notes baked in (gotchas)
 
@@ -75,6 +89,8 @@ Then register in your MCP client config (command: `python3`, args: `["/home/alek
 ## Status
 
 Catalog: 18/19 datasets mapped (AP Alarms & Controller Inventory are SmartZone-only, N/A in R1).
-Viz: bignum, line, pie, table. Query grammar: saved + custom-SQL metrics, percent-of-total,
-dimension + time filters, d3 formats. Not yet: dashboard-level native filter bar; auto-import
-(needs an analytics-backend API — currently you import the zip via the UI).
+Viz (14): bignum, bignum_trend, line, bar, area, scatter, pie, table, gauge, heatmap, funnel, pivot, mixed, tree. Query grammar: saved +
+custom-SQL metrics, percent-of-total, dimension + time filters, d3 formats. Cross-filtering is
+built in (click a chart value to filter the dashboard). Not yet: explicit dashboard-level native
+filter bar; remaining viz (treemap, sunburst, box plot, bubble, radar, waterfall, graph, histogram,
+calendar heatmap, sankey, smooth/stepped line); auto-import (needs an analytics-backend API — import the zip via UI).
