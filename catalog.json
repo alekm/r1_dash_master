@@ -106,14 +106,14 @@
       "name": "switchInventory", "display": "Switch Inventory", "datasource_id": 11,
       "dataset_uuid": "362e741d-7040-4456-906b-7ab1b7c97a44",
       "metrics": ["Switch Count", "Total Switches", "Online", "Offline", "Always Online", "Ever Offline", "Offline Duration", "CPU (%)", "Memory (%)", "CPU Utilization (%)", "Memory Utilization (%)", "Free memory", "Total memory", "PoE Usage (mW)", "PoE Free (mW)", "PoE Total (mW)", "PoE Utilization (%)", "Total Attempted Count", "Total Allowed Count", "Total Dhcp Clients Attempted", "Total Dhcp Clients Succeeded", "Actual Temperature", "Warning Temperature", "Shutdown Temperature", "IPv4 Unicast Utilization (%)", "IPv6 Unicast Utilization (%)", "IPv4 Multicast Utilization (%)", "IPv6 Multicast Utilization (%)", "ARP Utilization (%)", "MAC Utilization (%)"],
-      "dims": ["switchId", "switchIp", "switchGroupLevelOneName"],
-      "notes": "Switch health. SCALE QUIRK: 'CPU Utilization (%)' & 'Memory Utilization (%)' are 0-100; 'PoE Utilization (%)' is a 0-1 fraction (format with .0%). Switch MAC shows as switchId; switchGroupLevelOneName = Venue."
+      "dims": ["switchId", "switchName", "switchIp", "switchGroupLevelOneName", "isStack", "numOfPorts", "numOfSwitchUnits"],
+      "notes": "Switch health. switchName = friendly name; switchGroupLevelOneName = Venue. SCALE QUIRK: 'CPU Utilization (%)' & 'Memory Utilization (%)' are 0-100; 'PoE Utilization (%)' is a 0-1 fraction (format with .0%). Switch MAC shows as switchId; switchGroupLevelOneName = Venue."
     },
     {
       "name": "switchNetwork", "display": "Switch Network", "datasource_id": 6,
       "dataset_uuid": "fd8c7e2a-be25-4dfc-ac2c-303a288f34ce",
       "metrics": ["Switch Count", "Switch Unit Count", "Total Switches", "Online", "Offline", "Always Online", "Ever Offline", "In Errors", "Out Errors", "CRC", "In Discards", "Out Discards", "In Bits Per Sec", "Out Bits Per Sec", "In Utilization (%)", "Out Utilization (%)", "Port Count", "Rx Packets", "Tx Packets", "Short Packets", "Giant Packets", "Rx Broadcast Count", "Rx Multicast Count", "MTU", "Port PoE Utilization (%)", "Link Down Count", "Traffic (Total)", "Traffic (Downlink)", "Traffic (Uplink)"],
-      "dims": ["switchId", "portMac"]
+      "dims": ["switchId", "switchName", "switchUnitId", "portMac", "portName", "portNumber", "portSpeed", "portVlans"]
     },
     {
       "name": "mlisa-edgeAvc", "display": "Edge AVC", "datasource_id": 19,

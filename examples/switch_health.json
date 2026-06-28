@@ -9,8 +9,12 @@
       {"type": "bignum", "dataset": "switchInventory", "title": "Avg PoE Utilization", "width": 3, "metric": "PoE Utilization (%)"}
     ],
     [
+      {"type": "table", "dataset": "switchInventory", "title": "Switches by Venue (click to filter)", "width": 12,
+       "groupby": ["switchGroupLevelOneName"], "metrics": ["Switch Count"], "row_limit": 25}
+    ],
+    [
       {"type": "table", "dataset": "switchInventory", "title": "Switches (click to filter)", "width": 12,
-       "groupby": ["switchGroupLevelOneName", "switchId"],
+       "groupby": ["switchGroupLevelOneName", "switchName"],
        "metrics": ["Online", "Offline", "CPU Utilization (%)", "Memory Utilization (%)", "PoE Utilization (%)"],
        "row_limit": 50}
     ],
@@ -23,7 +27,7 @@
       {"type": "line", "dataset": "switchNetwork", "title": "Port Errors Over Time", "width": 6,
        "metrics": ["In Errors", "Out Errors", "CRC"]},
       {"type": "table", "dataset": "switchNetwork", "title": "Top Ports by Errors", "width": 6,
-       "groupby": ["switchId", "portMac"], "metrics": ["In Errors", "Out Errors", "CRC", "Link Down Count"], "row_limit": 25}
+       "groupby": ["switchName", "portName"], "metrics": ["In Errors", "Out Errors", "CRC", "Link Down Count"], "row_limit": 25}
     ],
     [
       {"type": "line", "dataset": "switchNetwork", "title": "Switch Traffic - Total/Downlink/Uplink", "width": 6,
