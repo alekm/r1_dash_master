@@ -33,11 +33,13 @@ Chart:
 ```jsonc
 {
   "type": "bignum" | "bignum_trend" | "line" | "bar" | "area" | "scatter" | "pie" | "table"
-         | "gauge" | "heatmap" | "funnel" | "pivot" | "mixed" | "tree",
+         | "gauge" | "heatmap" | "funnel" | "pivot" | "mixed" | "tree" | "bubble",
   "stacked": true,                       // bar/area only: stack the series
+  "x": "apMac",                          // line/bar/area/scatter: optional DIMENSION x-axis (default __time)
   // pivot:  "rows": ["zoneName"], "columns": ["radio"], "metrics": [...]
   // mixed:  "metrics": [...] (bars) + "metrics_b": [...] (line) + optional "groupby"/"groupby_b","format_b"
   // tree:   "id": "apName", "parent": "apModel", "name": "apName", "metric": "..."
+  // bubble: "entity": "apName", "x": <metric>, "y": <metric>, "size": <metric>  (x/y/size are METRICS here)
   // funnel/gauge/heatmap: "metric" (singular) + "groupby" ([dim]; heatmap uses first dim as Y)
   "dataset": "binnedSessions",          // internal name from list_datasets
   "title": "...", "width": 1-12,
@@ -89,8 +91,8 @@ Then register in your MCP client config (command: `python3`, args: `["/home/alek
 ## Status
 
 Catalog: 18/19 datasets mapped (AP Alarms & Controller Inventory are SmartZone-only, N/A in R1).
-Viz (14): bignum, bignum_trend, line, bar, area, scatter, pie, table, gauge, heatmap, funnel, pivot, mixed, tree. Query grammar: saved +
+Viz (15): bignum, bignum_trend, line, bar, area, scatter, pie, table, gauge, heatmap, funnel, pivot, mixed, tree, bubble. Query grammar: saved +
 custom-SQL metrics, percent-of-total, dimension + time filters, d3 formats. Cross-filtering is
 built in (click a chart value to filter the dashboard). Not yet: explicit dashboard-level native
-filter bar; remaining viz (treemap, sunburst, box plot, bubble, radar, waterfall, graph, histogram,
+filter bar; remaining viz (treemap, sunburst, box plot, radar, waterfall, graph, histogram,
 calendar heatmap, sankey, smooth/stepped line); auto-import (needs an analytics-backend API — import the zip via UI).
