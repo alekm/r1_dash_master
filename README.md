@@ -21,7 +21,7 @@ field names.
 ```jsonc
 {
   "title": "Network Intelligence",      // generic — NEVER tenant-specific (bundles are portable across ECs)
-  "tenant_id": "<EC tenant id>",        // the End Customer this targets; swap to move between ECs
+  // tenant_id: OPTIONAL — omit it. Import auto-rescopes to the target EC (tenant). Only include to hard-pin a tenant.
   "time_range": "Last week",            // default for all charts
   "rows": [                              // each row = list of charts; widths in a row sum to <= 12
     [ {chart}, {chart} ]
