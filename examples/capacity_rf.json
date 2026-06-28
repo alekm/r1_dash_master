@@ -1,0 +1,32 @@
+{
+  "title": "Capacity and RF",
+  "tenant_id": "76389fd2c4294497a2fadd6756857de7",
+  "time_range": "Last week",
+  "rows": [
+    [
+      {"type": "gauge", "dataset": "binnedRadio", "title": "Avg Airtime Utilization", "width": 3,
+       "metric": "Avg Airtime Utilization", "format": ".0%"},
+      {"type": "bignum", "dataset": "binnedRadio", "title": "Total AP Traffic", "width": 3, "metric": "Traffic (Total)"},
+      {"type": "bignum", "dataset": "binnedSessions", "title": "Avg RSS (dBm)", "width": 3, "metric": "Avg RSS"},
+      {"type": "bignum", "dataset": "binnedSessions", "title": "Avg SNR (dB)", "width": 3, "metric": "Avg SNR"}
+    ],
+    [
+      {"type": "heatmap", "dataset": "binnedRadio", "title": "AP Airtime Utilization (AP x time)", "width": 12,
+       "metric": "Avg Airtime Utilization", "groupby": ["apMac"], "row_limit": 100000}
+    ],
+    [
+      {"type": "line", "dataset": "binnedRadio", "title": "Airtime Utilization by Band", "width": 6,
+       "metrics": ["Avg Airtime Utilization"], "groupby": ["radio"], "format": ".0%"},
+      {"type": "line", "dataset": "binnedRadio", "title": "AP Traffic - Total/Downlink/Uplink", "width": 6,
+       "metrics": ["Traffic (Total)", "Traffic (Downlink)", "Traffic (Uplink)"]}
+    ],
+    [
+      {"type": "bubble", "dataset": "binnedSessions", "title": "Signal vs Throughput (size = traffic)", "width": 12,
+       "entity": "apName", "x": "Avg RSS", "y": "Client Throughput", "size": "User Traffic (Total)"}
+    ],
+    [
+      {"type": "table", "dataset": "binnedRadio", "title": "Airtime & Traffic per AP", "width": 12,
+       "groupby": ["apMac"], "metrics": ["Avg Airtime Utilization", "Avg Airtime Busy", "Traffic (Total)"], "row_limit": 50}
+    ]
+  ]
+}

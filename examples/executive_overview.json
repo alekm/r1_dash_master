@@ -1,0 +1,36 @@
+{
+  "title": "Executive Overview",
+  "tenant_id": "76389fd2c4294497a2fadd6756857de7",
+  "time_range": "Last week",
+  "rows": [
+    [
+      {"type": "bignum", "dataset": "binnedSessions", "title": "Total Traffic", "width": 3, "metric": "User Traffic (Total)"},
+      {"type": "bignum", "dataset": "binnedSessions", "title": "Unique Clients", "width": 3, "metric": "Unique Client MAC Count"},
+      {"type": "bignum", "dataset": "mlisa-apConnectionStats", "title": "Connection Success Rate", "width": 3,
+       "metric": {"sql": "1.0 * SUM(successCount) / SUM(attemptCount)", "label": "Success Rate"}, "format": ".1%"},
+      {"type": "bignum", "dataset": "apInventory", "title": "APs Online", "width": 3, "metric": "Online"}
+    ],
+    [
+      {"type": "table", "dataset": "binnedSessions", "title": "Venues - Traffic & Clients (click to filter)", "width": 12,
+       "groupby": ["zoneName"], "metrics": ["User Traffic (Total)", "Unique Client MAC Count"],
+       "percent_of_total": ["User Traffic (Total)"], "row_limit": 25}
+    ],
+    [
+      {"type": "heatmap", "dataset": "binnedSessions", "title": "Traffic Heatmap (venue x time)", "width": 6,
+       "metric": "User Traffic (Total)", "groupby": ["zoneName"]},
+      {"type": "area", "dataset": "binnedAvc", "title": "Traffic Share by App Category", "width": 6,
+       "metrics": ["Traffic (Total)"], "groupby": ["category"], "stacked": true}
+    ],
+    [
+      {"type": "line", "dataset": "binnedSessions", "title": "Throughput - Total/Downlink/Uplink", "width": 8,
+       "metrics": ["User Traffic (Total)", "User Traffic (Downlink)", "User Traffic (Uplink)"]},
+      {"type": "pie", "dataset": "binnedSessions", "title": "Traffic by Device Type", "width": 4,
+       "metric": "User Traffic (Total)", "groupby": ["deviceType"]}
+    ],
+    [
+      {"type": "table", "dataset": "binnedSessions", "title": "Top APs by Traffic", "width": 12,
+       "groupby": ["apName", "apMac"], "metrics": ["User Traffic (Total)", "Unique Client MAC Count"],
+       "percent_of_total": ["User Traffic (Total)"], "row_limit": 25}
+    ]
+  ]
+}
