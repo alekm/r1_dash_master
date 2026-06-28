@@ -1,0 +1,35 @@
+{
+  "title": "Application Usage",
+  "time_range": "Last week",
+  "rows": [
+    [
+      {"type": "bignum", "dataset": "binnedAvc", "title": "Total App Traffic", "width": 3, "metric": "Traffic (Total)"},
+      {"type": "bignum", "dataset": "binnedAvc", "title": "Downlink", "width": 3, "metric": "Traffic (Downlink)"},
+      {"type": "bignum", "dataset": "binnedAvc", "title": "Uplink", "width": 3, "metric": "Traffic (Uplink)"},
+      {"type": "bignum", "dataset": "binnedAvc", "title": "Unique Clients", "width": 3, "metric": "Unique Client MAC Count"}
+    ],
+    [
+      {"type": "table", "dataset": "binnedAvc", "title": "Top Categories (click to filter)", "width": 6,
+       "groupby": ["category"], "metrics": ["Traffic (Total)", "Unique Client MAC Count"],
+       "percent_of_total": ["Traffic (Total)"], "row_limit": 25},
+      {"type": "pie", "dataset": "binnedAvc", "title": "Traffic by Category", "width": 6,
+       "metric": "Traffic (Total)", "groupby": ["category"]}
+    ],
+    [
+      {"type": "area", "dataset": "binnedAvc", "title": "Traffic Share by Category Over Time", "width": 12,
+       "metrics": ["Traffic (Total)"], "groupby": ["category"], "stacked": true}
+    ],
+    [
+      {"type": "table", "dataset": "binnedAvc", "title": "Top Apps by Traffic (click to filter)", "width": 6,
+       "groupby": ["app"], "metrics": ["Traffic (Total)", "Unique Client MAC Count"],
+       "percent_of_total": ["Traffic (Total)"], "row_limit": 25},
+      {"type": "pivot", "dataset": "binnedAvc", "title": "Venue x Category Traffic", "width": 6,
+       "rows": ["zoneName"], "columns": ["category"], "metrics": ["Traffic (Total)"], "row_limit": 1000}
+    ],
+    [
+      {"type": "table", "dataset": "binnedAvc", "title": "Traffic by Venue (click to filter)", "width": 12,
+       "groupby": ["zoneName"], "metrics": ["Traffic (Total)", "Unique Client MAC Count"],
+       "percent_of_total": ["Traffic (Total)"], "row_limit": 25}
+    ]
+  ]
+}
