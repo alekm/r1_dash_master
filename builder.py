@@ -98,8 +98,9 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
     tr = chart.get("time_range") or chart["_time_range"]
     typ = chart["type"]
     base = {"datasource": f"{n}__table", "slice_id": sid, "_slice_name": chart["title"],
-            "tenant_ids": [tenant], "datasource_name": ds["name"], "extra_form_data": {},
-            "dashboards": [dash_id]}
+            "datasource_name": ds["name"], "extra_form_data": {}, "dashboards": [dash_id]}
+    if tenant:
+        base["tenant_ids"] = [tenant]
     afilt = _adhoc_filters(chart, sid, tr)
 
     if typ == "bignum":
@@ -397,7 +398,12 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
 def _dashboard_yaml(title, tenant, rows, charts_meta):
     L = ["dashboard_title: " + title, "description: null", "css: null", "slug: null",
          "certified_by: null", "certification_details: null", "published: true",
-         f"uuid: {uuid.uuid4()}", "metadata:", "  tenant_ids:", f"  - {tenant}", "position:",
+         f"uuid: {uuid.uuid4()}"]
+    if tenant:
+        L += ["metadata:", "  tenant_ids:", f"  - {tenant}"]
+    else:
+        L += ["metadata: {}"]
+    L += ["position:",
          "  DASHBOARD_VERSION_KEY: v2", "  ROOT_ID:", "    children:", "    - GRID_ID",
          "    id: ROOT_ID", "    type: ROOT", "  GRID_ID:", "    children:"]
     for ri in range(len(rows)):
@@ -428,8 +434,6 @@ def validate_spec(spec, catalog):
     problems = []
     if not spec.get("title"):
         problems.append("spec.title is required (use a generic, non-tenant name)")
-    if not spec.get("tenant_id"):
-        problems.append("spec.tenant_id (the EC tenant id) is required")
     rows = spec.get("rows") or []
     if not rows:
         problems.append("spec.rows is empty")
@@ -479,7 +483,7 @@ def build_dashboard(spec, catalog, out_path, sid_base=900000):
         raise ValueError("spec validation failed:\n  - " + "\n  - ".join(problems))
     by_name = {d["name"]: d for d in catalog["datasets"]}
     title = spec["title"]
-    tenant = spec["tenant_id"]
+    tenant = spec.get("tenant_id")  # optional — omitted from bundle if absent (import rescopes to target EC)
     default_tr = spec.get("time_range", "Last week")
     rows = spec["rows"]
 

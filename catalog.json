@@ -106,7 +106,8 @@
       "name": "switchInventory", "display": "Switch Inventory", "datasource_id": 11,
       "dataset_uuid": "362e741d-7040-4456-906b-7ab1b7c97a44",
       "metrics": ["Switch Count", "Total Switches", "Online", "Offline", "Always Online", "Ever Offline", "Offline Duration", "CPU (%)", "Memory (%)", "CPU Utilization (%)", "Memory Utilization (%)", "Free memory", "Total memory", "PoE Usage (mW)", "PoE Free (mW)", "PoE Total (mW)", "PoE Utilization (%)", "Total Attempted Count", "Total Allowed Count", "Total Dhcp Clients Attempted", "Total Dhcp Clients Succeeded", "Actual Temperature", "Warning Temperature", "Shutdown Temperature", "IPv4 Unicast Utilization (%)", "IPv6 Unicast Utilization (%)", "IPv4 Multicast Utilization (%)", "IPv6 Multicast Utilization (%)", "ARP Utilization (%)", "MAC Utilization (%)"],
-      "dims": ["switchId", "switchIp", "switchGroupLevelOneName"]
+      "dims": ["switchId", "switchIp", "switchGroupLevelOneName"],
+      "notes": "Switch health. SCALE QUIRK: 'CPU Utilization (%)' & 'Memory Utilization (%)' are 0-100; 'PoE Utilization (%)' is a 0-1 fraction (format with .0%). Switch MAC shows as switchId; switchGroupLevelOneName = Venue."
     },
     {
       "name": "switchNetwork", "display": "Switch Network", "datasource_id": 6,

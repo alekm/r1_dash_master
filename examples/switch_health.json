@@ -1,0 +1,35 @@
+{
+  "title": "Switch Health",
+  "time_range": "Last week",
+  "rows": [
+    [
+      {"type": "bignum", "dataset": "switchInventory", "title": "Total Switches", "width": 3, "metric": "Total Switches"},
+      {"type": "bignum", "dataset": "switchInventory", "title": "Switches Online", "width": 3, "metric": "Online"},
+      {"type": "bignum", "dataset": "switchInventory", "title": "Avg CPU Utilization", "width": 3, "metric": "CPU Utilization (%)"},
+      {"type": "bignum", "dataset": "switchInventory", "title": "Avg PoE Utilization", "width": 3, "metric": "PoE Utilization (%)"}
+    ],
+    [
+      {"type": "table", "dataset": "switchInventory", "title": "Switches (click to filter)", "width": 12,
+       "groupby": ["switchGroupLevelOneName", "switchId"],
+       "metrics": ["Online", "Offline", "CPU Utilization (%)", "Memory Utilization (%)", "PoE Utilization (%)"],
+       "row_limit": 50}
+    ],
+    [
+      {"type": "gauge", "dataset": "switchInventory", "title": "PoE Utilization", "width": 4, "metric": "PoE Utilization (%)", "format": ".0%"},
+      {"type": "line", "dataset": "switchInventory", "title": "CPU & Memory Utilization", "width": 8,
+       "metrics": ["CPU Utilization (%)", "Memory Utilization (%)"]}
+    ],
+    [
+      {"type": "line", "dataset": "switchNetwork", "title": "Port Errors Over Time", "width": 6,
+       "metrics": ["In Errors", "Out Errors", "CRC"]},
+      {"type": "table", "dataset": "switchNetwork", "title": "Top Ports by Errors", "width": 6,
+       "groupby": ["switchId", "portMac"], "metrics": ["In Errors", "Out Errors", "CRC", "Link Down Count"], "row_limit": 25}
+    ],
+    [
+      {"type": "line", "dataset": "switchNetwork", "title": "Switch Traffic - Total/Downlink/Uplink", "width": 6,
+       "metrics": ["Traffic (Total)", "Traffic (Downlink)", "Traffic (Uplink)"]},
+      {"type": "line", "dataset": "switchNetwork", "title": "Port Utilization In/Out", "width": 6,
+       "metrics": ["In Utilization (%)", "Out Utilization (%)"], "format": ".1%"}
+    ]
+  ]
+}
