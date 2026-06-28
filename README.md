@@ -88,6 +88,15 @@ python3 server.py
 ```
 Then register in your MCP client config (command: `python3`, args: `["/home/alek/src/r1_dash_master/server.py"]`).
 
+## Examples vs. Gallery
+
+- **`examples/*.json`** — source specs, for driving the MCP/builder and learning the spec format.
+- **`gallery/*.zip`** — prebuilt, **ready-to-import** dashboards. Since bundles are tenant-less,
+  they auto-rescope to whatever EC you import them into. Grab one → Data Studio → Settings →
+  Import Dashboard. Current set: executive_overview, capacity_rf, connection_health,
+  network_intelligence, switch_health, chart_gallery.
+- Regenerate the gallery from specs anytime: **`./build_gallery.sh`** (keeps zips in sync).
+
 ## Status
 
 Catalog: 18/19 datasets mapped (AP Alarms & Controller Inventory are SmartZone-only, N/A in R1).
