@@ -367,6 +367,29 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
              "emphasis": "descendant", "symbol": "emptyCircle", "symbolSize": 7, "roam": True}
         return "tree_chart", p, qc
 
+    if typ == "bubble":
+        ent = chart["entity"]
+        mx = _sqlmetric(chart["x"], sid, 0)
+        my = _sqlmetric(chart["y"], sid, 1)
+        msz = _sqlmetric(chart["size"], sid, 2)
+        rl = chart.get("row_limit", 10000)
+        qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "extras": {"having": "", "where": ""}, "applied_time_extras": {}, "columns": [ent],
+            "metrics": [mx, my, msz], "annotation_layers": [], "row_limit": rl, "series_limit": 0,
+            "order_desc": True, "url_params": {}, "custom_params": {}, "custom_form_data": {}}],
+            "form_data": {**base, "viz_type": "bubble_v2", "entity": ent, "x": mx, "y": my, "size": msz,
+                          "adhoc_filters": afilt, "row_limit": rl},
+            "result_format": "json", "result_type": "full"}
+        p = {**base, "viz_type": "bubble_v2", "entity": ent, "x": mx, "y": my, "size": msz,
+             "adhoc_filters": afilt, "order_desc": True, "row_limit": rl, "color_scheme": "acxColor",
+             "show_legend": True, "legendType": "scroll", "legendOrientation": "top", "max_bubble_size": "25",
+             "tooltipSizeFormat": "SMART_NUMBER", "opacity": 0.6, "x_axis_title_margin": 30,
+             "xAxisFormat": chart.get("format", "SMART_NUMBER"), "y_axis_title_margin": 30,
+             "y_axis_format": chart.get("format", "SMART_NUMBER"), "truncateXAxis": True,
+             "y_axis_bounds": [None, None]}
+        return "bubble_v2", p, qc
+
     raise ValueError(f"unknown chart type: {typ!r}")
 
 
@@ -417,16 +440,24 @@ def validate_spec(spec, catalog):
                 problems.append(f"{loc}: unknown dataset {ch.get('dataset')!r}")
                 continue
             mset, dset = set(ds["metrics"]), set(ds["dims"])
+            is_bubble = ch.get("type") == "bubble"
             metrics = (ch.get("metrics", []) + ([ch["metric"]] if ch.get("metric") else [])
                        + ch.get("percent_of_total", []) + ch.get("metrics_b", []))
+            if is_bubble:  # bubble x/y/size are METRICS, not dims
+                metrics += [ch[k] for k in ("x", "y", "size") if ch.get(k)]
             for m in metrics:
                 if isinstance(m, str) and m not in mset:
                     problems.append(f"{loc}: metric {m!r} not in {ds['name']} (have: {sorted(mset)[:6]}...)")
             dims_used = (list(ch.get("groupby", [])) + list(ch.get("groupby_b", []))
                          + list(ch.get("rows", [])) + list(ch.get("columns", [])))
-            for k in ("id", "parent", "name", "x"):
+            for k in ("id", "parent", "name"):
                 if ch.get(k):
                     dims_used.append(ch[k])
+            if is_bubble:
+                if ch.get("entity"):
+                    dims_used.append(ch["entity"])
+            elif ch.get("x"):  # timeseries dimension x-axis
+                dims_used.append(ch["x"])
             for col in dims_used:
                 if col not in dset:
                     problems.append(f"{loc}: dimension {col!r} not a dim of {ds['name']}")
@@ -435,7 +466,7 @@ def validate_spec(spec, catalog):
                     problems.append(f"{loc}: filter col {col!r} not a dim of {ds['name']}")
             if ch.get("type") not in ("bignum", "bignum_trend", "line", "bar", "area", "scatter",
                                        "pie", "table", "gauge", "heatmap", "funnel", "pivot",
-                                       "mixed", "tree"):
+                                       "mixed", "tree", "bubble"):
                 problems.append(f"{loc}: bad type {ch.get('type')!r}")
     return problems
 
