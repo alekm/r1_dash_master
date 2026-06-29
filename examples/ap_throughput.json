@@ -25,9 +25,9 @@
        "metrics": ["Avg AP-to-Client Latency"]}
     ],
     [
-      {"type": "table", "dataset": "binnedApTraffic", "title": "Per-AP Throughput & Latency", "width": 12,
+      {"type": "table", "dataset": "binnedApTraffic", "title": "Per-AP Traffic & Latency", "width": 12,
        "groupby": ["apName"],
-       "metrics": ["Avg AP Downlink Throughput", "Avg 2.4 GHz Downlink Throughput", "Avg 5 GHz Downlink Throughput", "Avg 6(5) GHz Downlink Throughput", "Avg AP-to-Client Latency", "Traffic (Total)"],
+       "metrics": ["Traffic (Total)", "Traffic (Downlink)", "Traffic (Uplink)", "Avg AP-to-Client Latency"],
        "row_limit": 100}
     ]
   ]
