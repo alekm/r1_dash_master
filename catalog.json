@@ -723,16 +723,29 @@
       "datasource_id": 19,
       "dataset_uuid": "246b1864-9847-4169-965e-65c42e16a917",
       "metrics": [
-        "Traffic (Total)",
-        "Traffic (Downlink)",
-        "Traffic (Uplink)",
         "Unique Client MAC Count",
         "Unique Edge Count",
-        "Unique Edge Cluster Count"
+        "Unique Edge Cluster Count",
+        "Traffic (Uplink)",
+        "Traffic (Downlink)",
+        "Traffic (Total)"
       ],
       "dims": [
+        "zoneName",
+        "edgeId",
+        "clusterId",
+        "tagList",
         "clusterRole",
-        "wlanId"
+        "destinationIp",
+        "sourceIp",
+        "destinationPort",
+        "sourcePort",
+        "ipProtocol",
+        "applicationName",
+        "applicationCategory",
+        "clientMac",
+        "wlanId",
+        "tag"
       ],
       "notes": "RUCKUS Edge app visibility (not in the 19-cube sheet)."
     }
@@ -799,8 +812,8 @@
     "manufacturer": "OS Manufacturer",
     "encryption": "Encryption Method",
     "geoLocation": "Geo Location",
-    "wlanId": null,
-    "clusterRole": null,
+    "wlanId": "WLAN ID",
+    "clusterRole": "Cluster Role",
     "port": "Port",
     "hostname": "Hostname",
     "btmInfo": "BTM Info",
@@ -823,6 +836,15 @@
     "firstConnection": "First Connection",
     "disconnectTime": "Disconnect Time",
     "operatorName": "Operators",
-    "epdgFqdn": "FQDN of ePDG"
+    "epdgFqdn": "FQDN of ePDG",
+    "edgeId": "Edge",
+    "clusterId": "Edge Cluster",
+    "destinationIp": "Destination IP",
+    "sourceIp": "Source IP",
+    "destinationPort": "Destination Port",
+    "sourcePort": "Source Port",
+    "ipProtocol": "IP Protocol",
+    "applicationName": "Application Name",
+    "applicationCategory": "Application Category"
   }
 }
