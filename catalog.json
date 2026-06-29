@@ -362,7 +362,7 @@
         "osType",
         "apGeoLocation"
       ],
-      "notes": "App visibility. 'app' = application name, 'category' = application category."
+      "notes": "Applications (AVC = Application Visibility and Control): on-AP deep-packet app classification. app=Application Name, category=Application Category."
     },
     {
       "name": "mlisa-apConnectionStats",
@@ -747,7 +747,7 @@
         "wlanId",
         "tag"
       ],
-      "notes": "RUCKUS Edge app visibility (not in the 19-cube sheet)."
+      "notes": "RUCKUS Edge AVC (Application Visibility and Control). Carries full 5-tuple flow detail (src/dst IP+port, ipProtocol) + edgeId/clusterId. applicationName/applicationCategory (note: different internal names than binnedAvc app/category)."
     }
   ],
   "not_in_r1": [
