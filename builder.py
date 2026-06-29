@@ -443,18 +443,38 @@ def _dashboard_yaml(title, tenant, rows, charts_meta):
     return "\n".join(L) + "\n"
 
 
+def _bad_time_range(tr):
+    """True if tr is an invalid relative-range literal. Valid: 'Last day/week/month/
+    quarter/year', 'No filter', or an explicit range (contains ' : ' / a digit-date).
+    'Last hour'/'Last N hours' etc. are NOT valid in Data Studio (DATASTUDIO-20000)."""
+    if not isinstance(tr, str) or not tr:
+        return False
+    t = tr.strip()
+    if t in ("Last day", "Last week", "Last month", "Last quarter", "Last year", "No filter"):
+        return False
+    if " : " in t or "T" in t or any(c.isdigit() for c in t):  # explicit/ISO custom range
+        return False
+    return t.lower().startswith("last ")  # any other "Last ..." literal is unsupported
+
+
 def validate_spec(spec, catalog):
     """Return a list of problem strings ([] == clean). Checks datasets, saved-metric & dim names."""
     by_name = {d["name"]: d for d in catalog["datasets"]}
     problems = []
     if not spec.get("title"):
         problems.append("spec.title is required (use a generic, non-tenant name)")
+    if _bad_time_range(spec.get("time_range")):
+        problems.append(f"spec.time_range {spec['time_range']!r} is not a valid Data Studio range "
+                        "(use Last day/week/month/quarter/year, or an explicit range)")
     rows = spec.get("rows") or []
     if not rows:
         problems.append("spec.rows is empty")
     for ri, row in enumerate(rows):
         for ci, ch in enumerate(row):
             loc = f"rows[{ri}][{ci}] '{ch.get('title','?')}'"
+            if _bad_time_range(ch.get("time_range")):
+                problems.append(f"{loc}: time_range {ch['time_range']!r} is not a valid Data Studio "
+                                "range (use Last day/week/month/quarter/year, or an explicit range)")
             ds = by_name.get(ch.get("dataset"))
             if not ds:
                 problems.append(f"{loc}: unknown dataset {ch.get('dataset')!r}")
