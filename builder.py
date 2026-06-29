@@ -443,18 +443,31 @@ def _dashboard_yaml(title, tenant, rows, charts_meta):
     return "\n".join(L) + "\n"
 
 
+# Valid Data Studio relative-range literals (from the Edit-time-range UI):
+#   RANGE TYPE "Last":     Last day / Last week / Last month / Last quarter
+#   RANGE TYPE "Previous": previous calendar week / previous calendar month
+# Sub-day windows must use a Custom explicit range ("N Hours Before" -> end), NOT
+# a "Last hour" literal (which yields DATASTUDIO-20000 "From date > to date").
+_VALID_TIME_RANGES = {
+    "Last day", "Last week", "Last month", "Last quarter",
+    "previous calendar week", "previous calendar month", "No filter",
+}
+
+
 def _bad_time_range(tr):
-    """True if tr is an invalid relative-range literal. Valid: 'Last day/week/month/
-    quarter/year', 'No filter', or an explicit range (contains ' : ' / a digit-date).
-    'Last hour'/'Last N hours' etc. are NOT valid in Data Studio (DATASTUDIO-20000)."""
+    """True if tr is an unsupported relative-range literal."""
     if not isinstance(tr, str) or not tr:
         return False
     t = tr.strip()
-    if t in ("Last day", "Last week", "Last month", "Last quarter", "Last year", "No filter"):
+    if t in _VALID_TIME_RANGES:
         return False
-    if " : " in t or "T" in t or any(c.isdigit() for c in t):  # explicit/ISO custom range
+    # any "Last ..." / "previous ..." literal not in the valid set is unsupported
+    # (checked before the digit heuristic so "Last 3 hours" is still rejected)
+    if t.lower().startswith(("last ", "previous ")):
+        return True
+    if " : " in t or "T" in t or any(c.isdigit() for c in t):  # explicit/custom range
         return False
-    return t.lower().startswith("last ")  # any other "Last ..." literal is unsupported
+    return False
 
 
 def validate_spec(spec, catalog):
