@@ -104,10 +104,40 @@ def _chart_yaml(viz, params, qc, sid, ch_uuid, ds_uuid):
     )
 
 
+# Time-grain labels (from the Data Studio UI) -> Superset ISO time_grain_sqla codes.
+# NOTE: minute is PT1M, month is P1M (T-prefix = time-of-day duration).
+_GRAINS = {
+    "30 second": "PT30S", "30s": "PT30S",
+    "minute": "PT1M", "1 minute": "PT1M", "1m": "PT1M",
+    "3 minute": "PT3M", "5 minute": "PT5M", "10 minute": "PT10M",
+    "15 minute": "PT15M", "30 minute": "PT30M",
+    "hour": "PT1H", "hourly": "PT1H", "h": "PT1H",
+    "day": "P1D", "daily": "P1D", "d": "P1D",
+    "week": "P1W", "weekly": "P1W", "w": "P1W",
+    "month": "P1M", "monthly": "P1M",
+    "quarter": "P3M", "quarterly": "P3M",
+}
+
+
+def _grain(chart):
+    """Resolve a chart/spec 'grain' (UI label or token) to a Superset time_grain_sqla
+    code. Defaults to hourly (PT1H). Accepts an ISO code passed through verbatim."""
+    raw = chart.get("grain") or chart.get("_grain")
+    if not raw:
+        return "PT1H"
+    key = str(raw).strip().lower()
+    if key in _GRAINS:
+        return _GRAINS[key]
+    if raw.startswith(("PT", "P")):  # already an ISO code
+        return raw
+    return "PT1H"
+
+
 def _build_chart(chart, ds, tenant, dash_id, sid):
     n = ds["datasource_id"]
     tr = chart.get("time_range") or chart["_time_range"]
     typ = chart["type"]
+    g = _grain(chart)
     base = {"datasource": f"{n}__table", "slice_id": sid, "_slice_name": chart["title"],
             "datasource_name": ds["name"], "extra_form_data": {}, "dashboards": [dash_id]}
     if tenant:
@@ -142,9 +172,9 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
             base_axis = {"columnType": "BASE_AXIS", "sqlExpression": xcol, "label": xcol, "expressionType": "SQL"}
             xaxis, index, qextras = xcol, [xcol], {"having": "", "where": ""}
         else:
-            base_axis = {"timeGrain": "PT1H", "columnType": "BASE_AXIS", "sqlExpression": "__time",
+            base_axis = {"timeGrain": g, "columnType": "BASE_AXIS", "sqlExpression": "__time",
                          "label": "__time", "expressionType": "SQL"}
-            xaxis, index, qextras = "__time", ["__time"], {"time_grain_sqla": "PT1H", "having": "", "where": ""}
+            xaxis, index, qextras = "__time", ["__time"], {"time_grain_sqla": g, "having": "", "where": ""}
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
             "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
             "extras": qextras, "applied_time_extras": {},
@@ -160,7 +190,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
                           "show_legend": True, "y_axis_format": chart.get("format", "SMART_NUMBER")},
             "result_format": "json", "result_type": "full"}
         if not xcol:
-            qc["form_data"]["time_grain_sqla"] = "PT1H"
+            qc["form_data"]["time_grain_sqla"] = g
         p = {**base, "viz_type": viz, "x_axis": xaxis,
              "x_axis_sort_asc": True, "x_axis_sort_series": "name", "x_axis_sort_series_ascending": True,
              "metrics": ms, "groupby": gb, "adhoc_filters": afilt, "order_desc": True, "row_limit": 10000,
@@ -172,7 +202,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
              "y_axis_format": chart.get("format", "SMART_NUMBER"), "truncateXAxis": True,
              "y_axis_bounds": [None, None]}
         if not xcol:
-            p["time_grain_sqla"] = "PT1H"
+            p["time_grain_sqla"] = g
         if typ in ("line", "area"):
             p["seriesType"] = "line"; p["markerSize"] = 6; p["opacity"] = 0.2
         if typ == "scatter":
@@ -187,20 +217,20 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
         m = _sqlmetric(chart["metric"], sid, 0)
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
             "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
-            "extras": {"time_grain_sqla": "PT1H", "having": "", "where": ""}, "applied_time_extras": {},
-            "columns": [{"timeGrain": "PT1H", "columnType": "BASE_AXIS", "sqlExpression": "__time",
+            "extras": {"time_grain_sqla": g, "having": "", "where": ""}, "applied_time_extras": {},
+            "columns": [{"timeGrain": g, "columnType": "BASE_AXIS", "sqlExpression": "__time",
                          "label": "__time", "expressionType": "SQL"}],
             "metrics": [m], "annotation_layers": [], "series_limit": 0, "order_desc": True,
             "url_params": {}, "custom_params": {}, "custom_form_data": {},
             "post_processing": [{"operation": "pivot", "options": {"index": ["__time"], "columns": [],
                                 "aggregates": {_mlabel(m): {"operator": "mean"}}, "drop_missing_columns": True}},
                                 {"operation": "flatten"}]}],
-            "form_data": {**base, "viz_type": "big_number", "x_axis": "__time", "time_grain_sqla": "PT1H",
+            "form_data": {**base, "viz_type": "big_number", "x_axis": "__time", "time_grain_sqla": g,
                           "metric": m, "adhoc_filters": afilt, "show_timestamp": True, "show_trend_line": True,
                           "start_y_axis_at_zero": True, "header_font_size": 0.4, "subheader_font_size": 0.15,
                           "y_axis_format": chart.get("format", "SMART_NUMBER"), "time_format": "smart_date"},
             "result_format": "json", "result_type": "full"}
-        p = {**base, "viz_type": "big_number", "x_axis": "__time", "time_grain_sqla": "PT1H", "metric": m,
+        p = {**base, "viz_type": "big_number", "x_axis": "__time", "time_grain_sqla": g, "metric": m,
              "adhoc_filters": afilt, "show_timestamp": True, "show_trend_line": True, "start_y_axis_at_zero": True,
              "color_picker": {"r": 102, "g": 177, "b": 232, "a": 1}, "header_font_size": 0.4,
              "subheader_font_size": 0.15, "y_axis_format": chart.get("format", "SMART_NUMBER"),
@@ -232,16 +262,16 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
         hm_rl = chart.get("row_limit", 10000)
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
             "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
-            "extras": {"time_grain_sqla": "PT1H", "having": "", "where": ""}, "applied_time_extras": {},
-            "columns": [{"timeGrain": "PT1H", "columnType": "BASE_AXIS", "sqlExpression": "__time",
+            "extras": {"time_grain_sqla": g, "having": "", "where": ""}, "applied_time_extras": {},
+            "columns": [{"timeGrain": g, "columnType": "BASE_AXIS", "sqlExpression": "__time",
                          "label": "__time", "expressionType": "SQL"}, ydim],
             "metrics": [m], "orderby": [], "annotation_layers": [], "row_limit": hm_rl, "series_limit": 0,
             "order_desc": True, "url_params": {}, "custom_params": {}, "custom_form_data": {},
             "post_processing": [{"operation": "rank", "options": {"metric": _mlabel(m)}}]}],
-            "form_data": {**base, "viz_type": "heatmap_v2", "x_axis": "__time", "time_grain_sqla": "PT1H",
+            "form_data": {**base, "viz_type": "heatmap_v2", "x_axis": "__time", "time_grain_sqla": g,
                           "groupby": ydim, "metric": m, "adhoc_filters": afilt, "row_limit": hm_rl},
             "result_format": "json", "result_type": "full"}
-        p = {**base, "viz_type": "heatmap_v2", "x_axis": "__time", "time_grain_sqla": "PT1H", "groupby": ydim,
+        p = {**base, "viz_type": "heatmap_v2", "x_axis": "__time", "time_grain_sqla": g, "groupby": ydim,
              "metric": m, "adhoc_filters": afilt, "row_limit": hm_rl, "normalize_across": "heatmap",
              "legend_type": "continuous", "linear_color_scheme": "acxSequential", "xscale_interval": -1,
              "yscale_interval": -1, "left_margin": "auto", "bottom_margin": "auto", "value_bounds": [None, None],
@@ -339,7 +369,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
 
         def _q(metrics, groupby, drop):
             return {"filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
-                    "extras": {"time_grain_sqla": "PT1H", "having": "", "where": ""}, "applied_time_extras": {},
+                    "extras": {"time_grain_sqla": g, "having": "", "where": ""}, "applied_time_extras": {},
                     "columns": [{"columnType": "BASE_AXIS", "sqlExpression": "__time", "label": "__time",
                                  "expressionType": "SQL"}] + list(groupby),
                     "metrics": metrics, "orderby": ([[metrics[0], False]] if metrics else []),
@@ -533,6 +563,7 @@ def build_dashboard(spec, catalog, out_path, sid_base=900000):
     title = spec["title"]
     tenant = spec.get("tenant_id")  # optional — omitted from bundle if absent (import rescopes to target EC)
     default_tr = spec.get("time_range", "Last week")
+    default_grain = spec.get("grain")  # optional board-level time grain (charts can override)
     rows = spec["rows"]
 
     work = os.path.join(os.path.dirname(out_path) or ".", f".build_{uuid.uuid4().hex[:8]}")
@@ -547,6 +578,8 @@ def build_dashboard(spec, catalog, out_path, sid_base=900000):
         for ci, ch in enumerate(row):
             ch.setdefault("title", f"chart-{ri}-{ci}")
             ch["_time_range"] = default_tr
+            if default_grain:
+                ch["_grain"] = default_grain
             ds = by_name[ch["dataset"]]
             sid += 1
             ch_uuid = _stable_uuid("chart", title, ri, ci, ch["title"])

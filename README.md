@@ -22,7 +22,8 @@ field names.
 {
   "title": "Network Intelligence",      // generic — NEVER tenant-specific (bundles are portable across ECs)
   // tenant_id: OPTIONAL — omit it. Import auto-rescopes to the target EC (tenant). Only include to hard-pin a tenant.
-  "time_range": "Last week",            // default for all charts
+  "time_range": "Last week",            // default for all charts (Last day/week/month/quarter, previous calendar week/month, or explicit range)
+  "grain": "day",                       // OPTIONAL trend time grain: 30 second/minute/3·5·10·15·30 minute/hour/day/week/month/quarter (default hour); charts can override
   "rows": [                              // each row = list of charts; widths in a row sum to <= 12
     [ {chart}, {chart} ]
   ]
