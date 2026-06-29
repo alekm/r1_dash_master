@@ -1,0 +1,34 @@
+{
+  "title": "AP Throughput & Latency",
+  "time_range": "Last week",
+  "rows": [
+    [
+      {"type": "bignum", "dataset": "binnedApTraffic", "title": "Avg AP Downlink Throughput", "width": 3, "metric": "Avg AP Downlink Throughput"},
+      {"type": "bignum", "dataset": "binnedApTraffic", "title": "Avg AP-to-Client Latency", "width": 3, "metric": "Avg AP-to-Client Latency"},
+      {"type": "bignum", "dataset": "binnedApTraffic", "title": "Total AP Traffic", "width": 3, "metric": "Traffic (Total)"},
+      {"type": "bignum", "dataset": "binnedApTraffic", "title": "AP Count", "width": 3, "metric": "AP Count"}
+    ],
+    [
+      {"type": "table", "dataset": "binnedApTraffic", "title": "Throughput & Latency by Venue (click to filter)", "width": 12,
+       "groupby": ["zoneName"],
+       "metrics": ["Avg AP Downlink Throughput", "Avg AP-to-Client Latency", "Traffic (Total)", "AP Count"],
+       "row_limit": 25}
+    ],
+    [
+      {"type": "line", "dataset": "binnedApTraffic", "title": "Downlink Throughput by Band Over Time", "width": 12,
+       "metrics": ["Avg 2.4 GHz Downlink Throughput", "Avg 5 GHz Downlink Throughput", "Avg 6(5) GHz Downlink Throughput"]}
+    ],
+    [
+      {"type": "line", "dataset": "binnedApTraffic", "title": "AP Downlink Throughput Over Time", "width": 6,
+       "metrics": ["Avg AP Downlink Throughput"]},
+      {"type": "line", "dataset": "binnedApTraffic", "title": "AP-to-Client Latency Over Time", "width": 6,
+       "metrics": ["Avg AP-to-Client Latency"]}
+    ],
+    [
+      {"type": "table", "dataset": "binnedApTraffic", "title": "Per-AP Throughput & Latency", "width": 12,
+       "groupby": ["apName"],
+       "metrics": ["Avg AP Downlink Throughput", "Avg 2.4 GHz Downlink Throughput", "Avg 5 GHz Downlink Throughput", "Avg 6(5) GHz Downlink Throughput", "Avg AP-to-Client Latency", "Traffic (Total)"],
+       "row_limit": 100}
+    ]
+  ]
+}
