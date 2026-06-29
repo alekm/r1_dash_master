@@ -89,7 +89,11 @@ python3 builder.py examples/network_intelligence.json out/network_intelligence_I
 pip install -r requirements.txt
 python3 server.py
 ```
-Then register it in your MCP client. For **Claude Desktop** (`claude_desktop_config.json`):
+
+**Easiest:** just ask Claude to set it up — point it at this repo and it'll wire the
+MCP server into your client for you (that's what the [video](https://youtu.be/-gU7yu6liOw) shows).
+
+**Manual:** register it yourself. For **Claude Desktop** (`claude_desktop_config.json`):
 
 ```json
 {
@@ -101,8 +105,6 @@ Then register it in your MCP client. For **Claude Desktop** (`claude_desktop_con
   }
 }
 ```
-
-Walkthrough: https://youtu.be/-gU7yu6liOw
 
 ## Examples vs. Gallery
 
