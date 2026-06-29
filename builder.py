@@ -1,39 +1,9 @@
-"""R1 Dash Master — build importable RUCKUS One Data Studio (Superset) dashboard bundles
-from a declarative spec. Pure offline generation; output is a .zip you import via
-Data Studio > Settings > Import Dashboard.
-
-Spec shape (dict):
-{
-  "title": "Network Intelligence",          # generic, never tenant-specific
-  "tenant_id": "<EC tenant id>",            # the 'EC' (End Customer) this targets
-  "time_range": "Last week",                # default TEMPORAL_RANGE for all charts
-  "rows": [                                  # list of rows; each row = list of charts
-    [ {chart}, {chart} ],
-    [ {chart} ]
-  ]
-}
-
-chart shape:
-{
-  "type": "bignum" | "line" | "pie" | "table",
-  "dataset": "<internal dataset name>",     # must exist in catalog
-  "title": "...",
-  "width": 1..12,                            # grid width; widths in a row should sum <=12
-  "metric":  "User Traffic (Total)" | {"sql": "1.0*SUM(a)/SUM(b)", "label": "Rate"},  # bignum/pie
-  "metrics": [ ... same forms ... ],         # line/table (list)
-  "groupby": ["radio"],                      # dims to break out by
-  "filter":  ["radio", "5"]  OR  [["radio","5"], ["zoneName","X"]],   # dimension filter(s)
-  "time_range": "Last day",                  # optional per-chart override
-  "format": ".1%",                           # d3 number format (e.g. ".1%", "SMART_NUMBER")
-  "percent_of_total": ["Traffic (Total)"],   # table only: percent_metrics (share of column total)
-  "row_limit": 25
-}
-"""
+"""R1 Dash Master — build importable RUCKUS One Data Studio (Superset) dashboard
+bundles from a declarative spec. Offline; output is a .zip imported via
+Data Studio > Settings > Import Dashboard. Spec format: see README.md."""
 import json, os, uuid, zipfile, shutil
 
-# Fixed namespace so UUIDs are deterministic: same (title, chart position) ->
-# same UUID every build, so re-importing a board UPDATES it in place instead
-# of spawning a duplicate.
+# Fixed namespace -> deterministic uuid5 so re-imports update a board in place.
 _NS = uuid.UUID("6f1d4b2a-9c3e-5a7f-8b21-d1da54a00000")
 
 
@@ -473,11 +443,8 @@ def _dashboard_yaml(title, tenant, rows, charts_meta):
     return "\n".join(L) + "\n"
 
 
-# Valid Data Studio relative-range literals (from the Edit-time-range UI):
-#   RANGE TYPE "Last":     Last day / Last week / Last month / Last quarter
-#   RANGE TYPE "Previous": previous calendar week / previous calendar month
-# Sub-day windows must use a Custom explicit range ("N Hours Before" -> end), NOT
-# a "Last hour" literal (which yields DATASTUDIO-20000 "From date > to date").
+# Valid Data Studio relative-range literals. Other "Last ..." (e.g. "Last hour")
+# error with DATASTUDIO-20000; sub-day needs a Custom explicit range instead.
 _VALID_TIME_RANGES = {
     "Last day", "Last week", "Last month", "Last quarter",
     "previous calendar week", "previous calendar month", "No filter",
@@ -491,8 +458,7 @@ def _bad_time_range(tr):
     t = tr.strip()
     if t in _VALID_TIME_RANGES:
         return False
-    # any "Last ..." / "previous ..." literal not in the valid set is unsupported
-    # (checked before the digit heuristic so "Last 3 hours" is still rejected)
+    # reject unsupported "Last ..."/"previous ..." before the digit check below
     if t.lower().startswith(("last ", "previous ")):
         return True
     if " : " in t or "T" in t or any(c.isdigit() for c in t):  # explicit/custom range

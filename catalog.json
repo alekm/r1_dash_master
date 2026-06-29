@@ -259,7 +259,7 @@
         "apGroupName",
         "tagList"
       ],
-      "notes": "AP-side traffic/throughput/MCS/latency per AP. Harvested live Jun 2026 (37 metrics) \u2014 DIFFERS from 9/2025 master sheet: capacity metrics REPLACED by 'Avg AP Downlink Throughput' + per-band 'Avg 2.4/5/6(5) GHz Downlink Throughput' (use these for AP-level throughput). 'Avg AP-to-SZ Heartbeat Latency' renamed 'Avg AP-to-RUCKUS One Heartbeat Latency' (+ new 'Avg AP-to-Ruckus One Ping Latency'; note RUCKUS vs Ruckus casing differs by metric). 'AP Tx Droppped Data Frames' keeps the source triple-p typo."
+      "notes": "AP-side traffic/throughput/MCS/latency per AP. 'Avg AP Downlink Throughput' + per-band 'Avg 2.4/5/6(5) GHz Downlink Throughput' are active-time (~PHY), not sustained. Casing differs: 'Avg AP-to-RUCKUS One Heartbeat Latency' vs 'Avg AP-to-Ruckus One Ping Latency'. 'AP Tx Droppped Data Frames' has a triple-p typo in the real metric name."
     },
     {
       "name": "apInventory",
