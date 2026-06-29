@@ -27,9 +27,23 @@
     {
       "name": "binnedApTraffic", "display": "AP Info and Statistics", "datasource_id": 7,
       "dataset_uuid": "e2b47f09-6aeb-4b18-b46a-4e354fec4370",
-      "metrics": [],
+      "metrics": [
+        "Traffic (Total)", "Traffic (Downlink)", "Traffic (Uplink)",
+        "User Traffic (Total)", "User Traffic (Downlink)", "User Traffic (Uplink)",
+        "Mgmt Traffic (Total)", "Mgmt Traffic (Downlink)", "Mgmt Traffic (Uplink)",
+        "Avg AP Downlink Throughput", "Avg 2.4 GHz Downlink Throughput", "Avg 5 GHz Downlink Throughput", "Avg 6(5) GHz Downlink Throughput",
+        "Avg AP-to-Client Latency", "Avg AP-to-RUCKUS One Heartbeat Latency", "Avg AP-to-Ruckus One Ping Latency",
+        "Data Frame Ratio (Total)", "Mgmt Frame Ratio (Total)",
+        "Data Frames (Downlink)", "Data Frames (Uplink)",
+        "Mgmt Frames (Downlink)", "Mgmt Frames (Uplink)",
+        "Broadcast Frames (Downlink)", "Multicast Frames (Downlink)", "Unicast Frames (Downlink)",
+        "AP Rx Failures", "AP Tx Failures", "AP Tx Droppped Data Frames",
+        "AP Count",
+        "Tx Avg 2.4GHz MCS Rate", "Tx Avg 5GHz MCS Rate", "Tx Avg 6(5)GHz MCS Rate", "Tx Avg AP MCS Rate",
+        "Rx Avg 2.4GHz MCS Rate", "Rx Avg 5GHz MCS Rate", "Rx Avg 6(5)GHz MCS Rate", "Rx Avg AP MCS Rate"
+      ],
       "dims": ["apMac", "apName", "apModel", "ssid", "channelWidth", "band", "radio"],
-      "notes": "Traffic/MCS/capacity metrics per master sheet but exact metric strings NOT yet harvested. Harvest a chart WITH metrics before using metrics."
+      "notes": "AP-side traffic/throughput/MCS/latency per AP. Harvested live Jun 2026 (37 metrics) — DIFFERS from 9/2025 master sheet: capacity metrics REPLACED by 'Avg AP Downlink Throughput' + per-band 'Avg 2.4/5/6(5) GHz Downlink Throughput' (use these for AP-level throughput). 'Avg AP-to-SZ Heartbeat Latency' renamed 'Avg AP-to-RUCKUS One Heartbeat Latency' (+ new 'Avg AP-to-Ruckus One Ping Latency'; note RUCKUS vs Ruckus casing differs by metric). 'AP Tx Droppped Data Frames' keeps the source triple-p typo."
     },
     {
       "name": "apInventory", "display": "AP Inventory", "datasource_id": 12,
