@@ -6,36 +6,22 @@
       {"type": "bignum", "dataset": "switchInventory", "title": "Total Switches", "width": 3, "metric": "Total Switches"},
       {"type": "bignum", "dataset": "switchInventory", "title": "Switches Online", "width": 3, "metric": "Online"},
       {"type": "bignum", "dataset": "switchInventory", "title": "Avg CPU Utilization", "width": 3, "metric": "CPU Utilization (%)"},
-      {"type": "bignum", "dataset": "switchInventory", "title": "Avg PoE Utilization", "width": 3, "metric": "PoE Utilization (%)", "format": ".0%"}
+      {"type": "bignum", "dataset": "switchInventory", "title": "Avg PoE Utilization", "width": 3, "metric": "PoE Utilization (%)"}
     ],
     [
       {"type": "table", "dataset": "switchInventory", "title": "Switches by Venue (click to filter)", "width": 12,
-       "groupby": ["switchGroupLevelOneName"], "metrics": ["Switch Count", "Online", "Offline"], "row_limit": 25}
+       "groupby": ["switchGroupLevelOneName"], "metrics": ["Switch Count"], "row_limit": 25}
     ],
     [
       {"type": "table", "dataset": "switchInventory", "title": "Switches (click to filter)", "width": 12,
        "groupby": ["switchGroupLevelOneName", "switchName"],
        "metrics": ["Online", "Offline", "CPU Utilization (%)", "Memory Utilization (%)", "PoE Utilization (%)"],
-       "column_formats": {"PoE Utilization (%)": ".0%"}, "row_limit": 50}
+       "row_limit": 50}
     ],
     [
       {"type": "gauge", "dataset": "switchInventory", "title": "PoE Utilization", "width": 4, "metric": "PoE Utilization (%)", "format": ".0%"},
       {"type": "line", "dataset": "switchInventory", "title": "CPU & Memory Utilization", "width": 8,
        "metrics": ["CPU Utilization (%)", "Memory Utilization (%)"]}
-    ],
-    [
-      {"type": "table", "dataset": "switchNetwork", "title": "AP-Uplink Ports (Peer is Ruckus AP - click to filter)", "width": 6,
-       "groupby": ["isRuckusAP"],
-       "metrics": ["Port Count", "Port PoE Utilization (%)", "In Errors", "Out Errors"],
-       "column_formats": {"Port PoE Utilization (%)": ".0%"}, "row_limit": 10},
-      {"type": "pie", "dataset": "switchNetwork", "title": "Ports by PoE Operational State", "width": 6,
-       "metric": "Port Count", "groupby": ["poeOperState"]}
-    ],
-    [
-      {"type": "table", "dataset": "switchNetwork", "title": "Ports by Optics Type", "width": 6,
-       "groupby": ["opticsType"], "metrics": ["Port Count", "In Errors", "Out Errors"], "row_limit": 25},
-      {"type": "pie", "dataset": "switchNetwork", "title": "Ports by Speed", "width": 6,
-       "metric": "Port Count", "groupby": ["portSpeed"]}
     ],
     [
       {"type": "line", "dataset": "switchNetwork", "title": "Port Errors Over Time", "width": 6,
