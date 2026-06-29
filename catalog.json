@@ -311,7 +311,18 @@
       ],
       "dims": [
         "apMac",
-        "metric"
+        "apName",
+        "apSerial",
+        "apModel",
+        "apLocation",
+        "apDescription",
+        "apFwVersion",
+        "apIp",
+        "apExtIp",
+        "radio",
+        "ssid",
+        "metric",
+        "tag"
       ],
       "raw_columns": {
         "Success Count": "successCount",
