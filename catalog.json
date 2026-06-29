@@ -169,11 +169,27 @@
       "dims": [
         "apMac",
         "apName",
+        "apSerial",
         "apModel",
+        "apLocation",
+        "apDescription",
+        "apFwVersion",
+        "apIp",
+        "apExtIp",
+        "zoneGeoLocation",
+        "apGroupGeoLocation",
+        "radio",
+        "channel",
         "ssid",
+        "bssid",
+        "bandCap",
+        "txPower",
         "channelWidth",
         "band",
-        "radio"
+        "latitude",
+        "longitude",
+        "streamCap",
+        "tag"
       ],
       "notes": "AP-side traffic/throughput/MCS/latency per AP. Harvested live Jun 2026 (37 metrics) \u2014 DIFFERS from 9/2025 master sheet: capacity metrics REPLACED by 'Avg AP Downlink Throughput' + per-band 'Avg 2.4/5/6(5) GHz Downlink Throughput' (use these for AP-level throughput). 'Avg AP-to-SZ Heartbeat Latency' renamed 'Avg AP-to-RUCKUS One Heartbeat Latency' (+ new 'Avg AP-to-Ruckus One Ping Latency'; note RUCKUS vs Ruckus casing differs by metric). 'AP Tx Droppped Data Frames' keeps the source triple-p typo."
     },
