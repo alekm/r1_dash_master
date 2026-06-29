@@ -264,15 +264,38 @@
       "datasource_id": 5,
       "dataset_uuid": "a9e1a00c-97eb-4696-8128-367dcc2095b8",
       "metrics": [
+        "Unique Client MAC Count",
+        "AP Count",
         "Traffic (Total)",
         "Traffic (Downlink)",
-        "Traffic (Uplink)",
-        "Unique Client MAC Count"
+        "Traffic (Uplink)"
       ],
       "dims": [
+        "apMac",
+        "apName",
+        "apSerial",
+        "apModel",
+        "apLocation",
+        "apDescription",
+        "apFwVersion",
+        "apIp",
+        "apExtIp",
+        "radio",
+        "ssid",
+        "latitude",
+        "longitude",
+        "tag",
+        "zoneName",
+        "apGroupName",
+        "tagList",
+        "clientMac",
         "app",
+        "port",
         "category",
-        "zoneName"
+        "clientIp",
+        "hostname",
+        "osType",
+        "apGeoLocation"
       ],
       "notes": "App visibility. 'app' = application name, 'category' = application category."
     },
@@ -667,6 +690,8 @@
     "encryption": null,
     "geoLocation": null,
     "wlanId": null,
-    "clusterRole": null
+    "clusterRole": null,
+    "port": "Port",
+    "hostname": "Hostname"
   }
 }
