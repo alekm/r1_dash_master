@@ -609,9 +609,17 @@
         "apIp",
         "apExtIp",
         "tag",
-        "zoneName",
+        "clientMac",
+        "ssid",
+        "radio",
+        "operatorName",
+        "epdgFqdn",
+        "latitude",
+        "longitude",
+        "apGeoLocation",
+        "tagList",
         "apGroupName",
-        "tagList"
+        "zoneName"
       ]
     },
     {
@@ -813,6 +821,8 @@
     "AP WiFi Capability": "AP WiFi Capability",
     "Client Capability": "Client Capability",
     "firstConnection": "First Connection",
-    "disconnectTime": "Disconnect Time"
+    "disconnectTime": "Disconnect Time",
+    "operatorName": "Operators",
+    "epdgFqdn": "FQDN of ePDG"
   }
 }
