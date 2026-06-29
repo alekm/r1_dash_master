@@ -322,7 +322,10 @@
         "radio",
         "ssid",
         "metric",
-        "tag"
+        "tag",
+        "zoneName",
+        "apGroupName",
+        "tagList"
       ],
       "raw_columns": {
         "Success Count": "successCount",
