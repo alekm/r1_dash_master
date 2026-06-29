@@ -344,7 +344,30 @@
         "Unique Client MAC Count"
       ],
       "dims": [
-        "apMac"
+        "apMac",
+        "apName",
+        "apSerial",
+        "apModel",
+        "apLocation",
+        "apDescription",
+        "apFwVersion",
+        "apIp",
+        "apExtIp",
+        "radio",
+        "ssid",
+        "tag",
+        "btmInfo",
+        "wlanEncryption",
+        "clientMac",
+        "manufacturer",
+        "reasonCode",
+        "messageIds",
+        "zoneName",
+        "apGroupName",
+        "tagList",
+        "isRoaming",
+        "failureType",
+        "failedMsgId"
       ]
     },
     {
@@ -700,12 +723,19 @@
     "powerMode": "Power Mode",
     "status": "Status",
     "availableChannel": "Available Channel",
-    "manufacturer": null,
+    "manufacturer": "OS Manufacturer",
     "encryption": null,
     "geoLocation": null,
     "wlanId": null,
     "clusterRole": null,
     "port": "Port",
-    "hostname": "Hostname"
+    "hostname": "Hostname",
+    "btmInfo": "BTM Info",
+    "wlanEncryption": "Security Protocol",
+    "reasonCode": "Event Description",
+    "messageIds": "Message IDs",
+    "isRoaming": "Roaming Flag",
+    "failureType": "Connection Stage",
+    "failedMsgId": "Failed Message Info"
   }
 }
