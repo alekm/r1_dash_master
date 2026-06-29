@@ -93,7 +93,7 @@ def _adhoc_filters(chart, sid, tr):
 
 def _chart_yaml(viz, params, qc, sid, ch_uuid, ds_uuid):
     return (
-        f"slice_name: {params['_slice_name']}\n"
+        f"slice_name: {json.dumps(params['_slice_name'])}\n"
         "description: null\ncertified_by: null\ncertification_details: null\n"
         f"viz_type: {viz}\n"
         f"params: {json.dumps({k: v for k, v in params.items() if k != '_slice_name'})}\n"
@@ -411,7 +411,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
 
 
 def _dashboard_yaml(title, tenant, rows, charts_meta):
-    L = ["dashboard_title: " + title, "description: null", "css: null", "slug: null",
+    L = ["dashboard_title: " + json.dumps(title), "description: null", "css: null", "slug: null",
          "certified_by: null", "certification_details: null", "published: true",
          f"uuid: {_stable_uuid('dashboard', title)}"]
     if tenant:
@@ -424,7 +424,7 @@ def _dashboard_yaml(title, tenant, rows, charts_meta):
     for ri in range(len(rows)):
         L.append(f"    - ROW-{ri}")
     L += ["    id: GRID_ID", "    parents:", "    - ROOT_ID", "    type: GRID",
-          "  HEADER_ID:", "    id: HEADER_ID", "    meta:", f"      text: {title}", "    type: HEADER"]
+          "  HEADER_ID:", "    id: HEADER_ID", "    meta:", f"      text: {json.dumps(title)}", "    type: HEADER"]
     for ri, row in enumerate(rows):
         L += [f"  ROW-{ri}:", "    children:"]
         for ci in range(len(row)):
@@ -436,7 +436,7 @@ def _dashboard_yaml(title, tenant, rows, charts_meta):
             L += [f"  CHART-{ri}-{ci}:", "    children: []", f"    id: CHART-{ri}-{ci}", "    meta:",
                   f"      chartId: {meta['sid']}",
                   f"      height: {HEIGHT.get(ch['type'], DEFAULT_HEIGHT)}",
-                  f"      sliceName: {ch['title']}", f"      uuid: {meta['uuid']}",
+                  f"      sliceName: {json.dumps(ch['title'])}", f"      uuid: {meta['uuid']}",
                   f"      width: {ch.get('width', 4)}", "    type: CHART", "    parents:",
                   "    - ROOT_ID", "    - GRID_ID", f"    - ROW-{ri}"]
     L.append("version: 1.0.0")
