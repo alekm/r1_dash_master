@@ -4,138 +4,573 @@
   "regions_note": "Datasets are the shared analytics schema across R1 tenants; same uuids should port across ECs (verify on first import).",
   "datasets": [
     {
-      "name": "binnedSessions", "display": "Client Info and Statistics", "datasource_id": 8,
+      "name": "binnedSessions",
+      "display": "Client Info and Statistics",
+      "datasource_id": 8,
       "dataset_uuid": "a2c88500-9874-45bd-bcad-f86ba821febd",
-      "metrics": ["User Traffic (Total)", "User Traffic (Downlink)", "User Traffic (Uplink)", "Unique Client MAC Count", "AP Count", "Client Throughput", "Avg RSS", "Max RSS", "Min RSS", "Avg SNR", "Max SNR", "Min SNR", "Avg Noise Floor", "Tx Client MCS Rate", "Rx Client MCS Rate", "Tx PER"],
-      "dims": ["clientMac", "osType", "deviceType", "manufacturer", "osVendorType", "ssid", "clientVlan", "zoneName", "apName", "apMac", "radio", "band", "encryption", "authMethod"],
+      "metrics": [
+        "User Traffic (Total)",
+        "User Traffic (Downlink)",
+        "User Traffic (Uplink)",
+        "Unique Client MAC Count",
+        "AP Count",
+        "Client Throughput",
+        "Avg RSS",
+        "Max RSS",
+        "Min RSS",
+        "Avg SNR",
+        "Max SNR",
+        "Min SNR",
+        "Avg Noise Floor",
+        "Tx Client MCS Rate",
+        "Rx Client MCS Rate",
+        "Tx PER"
+      ],
+      "dims": [
+        "clientMac",
+        "osType",
+        "deviceType",
+        "manufacturer",
+        "osVendorType",
+        "ssid",
+        "clientVlan",
+        "zoneName",
+        "apName",
+        "apMac",
+        "radio",
+        "band",
+        "encryption",
+        "authMethod"
+      ],
       "notes": "Richest client dataset. radio values '2.4'/'5'. zoneName = Venue. RF-quality + throughput-estimate metrics live here."
     },
     {
-      "name": "sessionsSummary", "display": "Client Sessions", "datasource_id": 1,
+      "name": "sessionsSummary",
+      "display": "Client Sessions",
+      "datasource_id": 1,
       "dataset_uuid": "3065f7de-b556-40ef-9a21-6016fc3cd254",
-      "metrics": ["Avg Session Duration", "Total Session Duration", "Session Count", "Roaming Session Count", "Username Count", "Hostname Count", "Unique Client MAC Count", "AP Count", "User Traffic(Total)", "User Traffic (Downlink)", "User Traffic (Uplink)"],
-      "dims": ["clientMac", "clientIp", "manufacturer", "radio", "radioMode", "encryption", "apMac", "apName", "apSerial", "apModel"],
+      "metrics": [
+        "Avg Session Duration",
+        "Total Session Duration",
+        "Session Count",
+        "Roaming Session Count",
+        "Username Count",
+        "Hostname Count",
+        "Unique Client MAC Count",
+        "AP Count",
+        "User Traffic(Total)",
+        "User Traffic (Downlink)",
+        "User Traffic (Uplink)"
+      ],
+      "dims": [
+        "clientMac",
+        "clientIp",
+        "manufacturer",
+        "radio",
+        "radioMode",
+        "encryption",
+        "apMac",
+        "apName",
+        "apSerial",
+        "apModel"
+      ],
       "notes": "Engagement: dwell time, sessions, roaming. WARNING: 'User Traffic(Total)' has NO space before paren in this dataset (unlike binnedSessions)."
     },
     {
-      "name": "binnedRadio", "display": "AP Airtime and Hardware", "datasource_id": 4,
+      "name": "binnedRadio",
+      "display": "AP Airtime and Hardware",
+      "datasource_id": 4,
       "dataset_uuid": "8a506c85-b55a-4de0-a217-40c9c0863dde",
-      "metrics": ["Avg Airtime Rx", "Avg Airtime Tx", "Avg Airtime Utilization", "Avg Airtime Busy", "Avg Airtime Idle", "Traffic (Total)", "Traffic (Downlink)", "Traffic (Uplink)", "User Traffic (Total)", "User Traffic (Downlink)", "User Traffic (Uplink)"],
-      "dims": ["apMac", "radio"],
+      "metrics": [
+        "Avg Airtime Rx",
+        "Avg Airtime Tx",
+        "Avg Airtime Utilization",
+        "Avg Tx Retry Rate",
+        "Avg CPU Utilization",
+        "Avg Memory Utilization",
+        "Avg Storage Utilization",
+        "AP Count",
+        "Avg Airtime Busy",
+        "Avg Airtime Idle",
+        "Traffic (Total)",
+        "Traffic (Downlink)",
+        "Traffic (Uplink)",
+        "User Traffic (Total)",
+        "User Traffic (Downlink)",
+        "User Traffic (Uplink)",
+        "Mgmt Traffic (Total)",
+        "Mgmt Traffic (Downlink)",
+        "Mgmt Traffic (Uplink)",
+        "Avg Tx Rate",
+        "Avg Rx Rate"
+      ],
+      "dims": [
+        "apMac",
+        "apName",
+        "apSerial",
+        "apModel",
+        "apLocation",
+        "apDescription",
+        "apFwVersion",
+        "apIp",
+        "apExtIp",
+        "radio",
+        "latitude",
+        "longitude",
+        "apGeoLocation",
+        "tag"
+      ],
       "notes": "Airtime/congestion/headroom. Airtime values are fractions 0-1 (Utilization+Idle ~= 1)."
     },
     {
-      "name": "binnedApTraffic", "display": "AP Info and Statistics", "datasource_id": 7,
+      "name": "binnedApTraffic",
+      "display": "AP Info and Statistics",
+      "datasource_id": 7,
       "dataset_uuid": "e2b47f09-6aeb-4b18-b46a-4e354fec4370",
       "metrics": [
-        "Traffic (Total)", "Traffic (Downlink)", "Traffic (Uplink)",
-        "User Traffic (Total)", "User Traffic (Downlink)", "User Traffic (Uplink)",
-        "Mgmt Traffic (Total)", "Mgmt Traffic (Downlink)", "Mgmt Traffic (Uplink)",
-        "Avg AP Downlink Throughput", "Avg 2.4 GHz Downlink Throughput", "Avg 5 GHz Downlink Throughput", "Avg 6(5) GHz Downlink Throughput",
-        "Avg AP-to-Client Latency", "Avg AP-to-RUCKUS One Heartbeat Latency", "Avg AP-to-Ruckus One Ping Latency",
-        "Data Frame Ratio (Total)", "Mgmt Frame Ratio (Total)",
-        "Data Frames (Downlink)", "Data Frames (Uplink)",
-        "Mgmt Frames (Downlink)", "Mgmt Frames (Uplink)",
-        "Broadcast Frames (Downlink)", "Multicast Frames (Downlink)", "Unicast Frames (Downlink)",
-        "AP Rx Failures", "AP Tx Failures", "AP Tx Droppped Data Frames",
+        "Traffic (Total)",
+        "Traffic (Downlink)",
+        "Traffic (Uplink)",
+        "User Traffic (Total)",
+        "User Traffic (Downlink)",
+        "User Traffic (Uplink)",
+        "Mgmt Traffic (Total)",
+        "Mgmt Traffic (Downlink)",
+        "Mgmt Traffic (Uplink)",
+        "Avg AP Downlink Throughput",
+        "Avg 2.4 GHz Downlink Throughput",
+        "Avg 5 GHz Downlink Throughput",
+        "Avg 6(5) GHz Downlink Throughput",
+        "Avg AP-to-Client Latency",
+        "Avg AP-to-RUCKUS One Heartbeat Latency",
+        "Avg AP-to-Ruckus One Ping Latency",
+        "Data Frame Ratio (Total)",
+        "Mgmt Frame Ratio (Total)",
+        "Data Frames (Downlink)",
+        "Data Frames (Uplink)",
+        "Mgmt Frames (Downlink)",
+        "Mgmt Frames (Uplink)",
+        "Broadcast Frames (Downlink)",
+        "Multicast Frames (Downlink)",
+        "Unicast Frames (Downlink)",
+        "AP Rx Failures",
+        "AP Tx Failures",
+        "AP Tx Droppped Data Frames",
         "AP Count",
-        "Tx Avg 2.4GHz MCS Rate", "Tx Avg 5GHz MCS Rate", "Tx Avg 6(5)GHz MCS Rate", "Tx Avg AP MCS Rate",
-        "Rx Avg 2.4GHz MCS Rate", "Rx Avg 5GHz MCS Rate", "Rx Avg 6(5)GHz MCS Rate", "Rx Avg AP MCS Rate"
+        "Tx Avg 2.4GHz MCS Rate",
+        "Tx Avg 5GHz MCS Rate",
+        "Tx Avg 6(5)GHz MCS Rate",
+        "Tx Avg AP MCS Rate",
+        "Rx Avg 2.4GHz MCS Rate",
+        "Rx Avg 5GHz MCS Rate",
+        "Rx Avg 6(5)GHz MCS Rate",
+        "Rx Avg AP MCS Rate"
       ],
-      "dims": ["apMac", "apName", "apModel", "ssid", "channelWidth", "band", "radio"],
-      "notes": "AP-side traffic/throughput/MCS/latency per AP. Harvested live Jun 2026 (37 metrics) — DIFFERS from 9/2025 master sheet: capacity metrics REPLACED by 'Avg AP Downlink Throughput' + per-band 'Avg 2.4/5/6(5) GHz Downlink Throughput' (use these for AP-level throughput). 'Avg AP-to-SZ Heartbeat Latency' renamed 'Avg AP-to-RUCKUS One Heartbeat Latency' (+ new 'Avg AP-to-Ruckus One Ping Latency'; note RUCKUS vs Ruckus casing differs by metric). 'AP Tx Droppped Data Frames' keeps the source triple-p typo."
+      "dims": [
+        "apMac",
+        "apName",
+        "apModel",
+        "ssid",
+        "channelWidth",
+        "band",
+        "radio"
+      ],
+      "notes": "AP-side traffic/throughput/MCS/latency per AP. Harvested live Jun 2026 (37 metrics) \u2014 DIFFERS from 9/2025 master sheet: capacity metrics REPLACED by 'Avg AP Downlink Throughput' + per-band 'Avg 2.4/5/6(5) GHz Downlink Throughput' (use these for AP-level throughput). 'Avg AP-to-SZ Heartbeat Latency' renamed 'Avg AP-to-RUCKUS One Heartbeat Latency' (+ new 'Avg AP-to-Ruckus One Ping Latency'; note RUCKUS vs Ruckus casing differs by metric). 'AP Tx Droppped Data Frames' keeps the source triple-p typo."
     },
     {
-      "name": "apInventory", "display": "AP Inventory", "datasource_id": 12,
+      "name": "apInventory",
+      "display": "AP Inventory",
+      "datasource_id": 12,
       "dataset_uuid": "667b1aea-e511-4997-9fa8-07c8e5390667",
-      "metrics": ["Online", "Offline", "AP Count", "Max Offline Duration", "AP Uptime"],
-      "dims": ["apMac", "connectionStatus"],
+      "metrics": [
+        "AP Count",
+        "Online",
+        "Offline",
+        "Always Online",
+        "Ever Offline",
+        "Total APs",
+        "AP Uptime",
+        "Max Offline Duration"
+      ],
+      "dims": [
+        "apMac",
+        "apName",
+        "apSerial",
+        "apModel",
+        "apLocation",
+        "apDescription",
+        "apFwVersion",
+        "apIp",
+        "apExtIp",
+        "latitude",
+        "longitude",
+        "apGeoLocation",
+        "tag",
+        "zoneName",
+        "apGroupName",
+        "tagList"
+      ],
       "notes": "AP up/down health."
     },
     {
-      "name": "apEvents", "display": "AP Events", "datasource_id": 15,
+      "name": "apEvents",
+      "display": "AP Events",
+      "datasource_id": 15,
       "dataset_uuid": "48d92303-d612-42cc-85ae-388f4bcd29d4",
-      "metrics": ["Reboot Count", "AP Count", "Event Count"],
-      "dims": ["apMac", "apModel"]
+      "metrics": [
+        "Reboot Count",
+        "AP Count",
+        "Event Count"
+      ],
+      "dims": [
+        "apMac",
+        "apName",
+        "apSerial",
+        "apModel",
+        "apLocation",
+        "apDescription",
+        "apFwVersion",
+        "apIp",
+        "apExtIp",
+        "radio",
+        "latitude",
+        "longitude",
+        "apGeoLocation",
+        "tag"
+      ]
     },
     {
-      "name": "binnedAvc", "display": "Applications", "datasource_id": 5,
+      "name": "binnedAvc",
+      "display": "Applications",
+      "datasource_id": 5,
       "dataset_uuid": "a9e1a00c-97eb-4696-8128-367dcc2095b8",
-      "metrics": ["Traffic (Total)", "Traffic (Downlink)", "Traffic (Uplink)", "Unique Client MAC Count"],
-      "dims": ["app", "category", "zoneName"],
+      "metrics": [
+        "Traffic (Total)",
+        "Traffic (Downlink)",
+        "Traffic (Uplink)",
+        "Unique Client MAC Count"
+      ],
+      "dims": [
+        "app",
+        "category",
+        "zoneName"
+      ],
       "notes": "App visibility. 'app' = application name, 'category' = application category."
     },
     {
-      "name": "mlisa-apConnectionStats", "display": "Client Connection Counts", "datasource_id": 9,
+      "name": "mlisa-apConnectionStats",
+      "display": "Client Connection Counts",
+      "datasource_id": 9,
       "dataset_uuid": "bef37bbc-c3f2-4b77-b6c4-1eb816ac48a4",
-      "metrics": ["Success Count", "Failure Count", "Attempt Count"],
-      "dims": ["apMac", "metric"],
-      "raw_columns": {"Success Count": "successCount", "Failure Count": "failureCount", "Attempt Count": "attemptCount"},
+      "metrics": [
+        "Success Count",
+        "Failure Count",
+        "Attempt Count"
+      ],
+      "dims": [
+        "apMac",
+        "metric"
+      ],
+      "raw_columns": {
+        "Success Count": "successCount",
+        "Failure Count": "failureCount",
+        "Attempt Count": "attemptCount"
+      },
       "notes": "Onboarding. Success Rate % = custom SQL '1.0 * SUM(successCount) / SUM(attemptCount)' with .1% format. The 'metric' dim (display 'Connection Stage') = the connection pipeline stages: assoc, auth, eap, radius, dhcp, l3-auth, anqp. Funnel/bar by 'metric' with Success or Failure Count = the onboarding stage view (failure-by-stage pinpoints where clients drop)."
     },
     {
-      "name": "mlisa-clientConnectionStats", "display": "Client Connection Events", "datasource_id": 3,
+      "name": "mlisa-clientConnectionStats",
+      "display": "Client Connection Events",
+      "datasource_id": 3,
       "dataset_uuid": "dbb8f2a2-ce50-4929-872b-38d2ca0758f2",
-      "metrics": ["Event Count", "Unique Client MAC Count"],
-      "dims": ["apMac"]
+      "metrics": [
+        "Event Count",
+        "Unique Client MAC Count"
+      ],
+      "dims": [
+        "apMac"
+      ]
     },
     {
-      "name": "apWiredClient", "display": "AP Wired Device", "datasource_id": 14,
+      "name": "apWiredClient",
+      "display": "AP Wired Device",
+      "datasource_id": 14,
       "dataset_uuid": "bdd2f737-088e-4f48-aa91-52934e8ee914",
-      "metrics": ["Client Count", "Traffic (Total bytes)", "Tx Packet Bytes", "Rx Packet Bytes", "Tx Packet Frames", "Rx Packet Frames", "Tx Unicast Packets", "Rx Unicast Packets", "Tx Multicast Packets", "Rx Multicast Packets", "Tx Broadcast Packets", "Rx Broadcast Packets", "Tx Drop Packets", "Rx Drop Packets", "Tx EAPoL Packets", "Rx EAPoL Packets", "Rx Legacy Multicast Packets"],
-      "dims": ["apMac"]
+      "metrics": [
+        "Client Count",
+        "Tx Packet Frames",
+        "Rx Packet Frames",
+        "Tx Unicast Packets",
+        "Rx Unicast Packets",
+        "Tx Multicast Packets",
+        "Rx Multicast Packets",
+        "Tx Broadcast Packets",
+        "Rx Broadcast Packets",
+        "Tx Drop Packets",
+        "Rx Drop Packets",
+        "Tx EAPoL Packets",
+        "Rx EAPoL Packets",
+        "Rx Legacy Multicast Packets",
+        "Traffic (Total bytes)",
+        "Tx Packet Bytes",
+        "Rx Packet Bytes"
+      ],
+      "dims": [
+        "apMac",
+        "apName",
+        "apSerial",
+        "apModel",
+        "apLocation",
+        "apDescription",
+        "apFwVersion",
+        "apIp",
+        "apExtIp",
+        "tag",
+        "zoneName",
+        "apGroupName",
+        "tagList"
+      ]
     },
     {
-      "name": "mlisa-apAfc", "display": "AP AFC", "datasource_id": 16,
+      "name": "mlisa-apAfc",
+      "display": "AP AFC",
+      "datasource_id": 16,
       "dataset_uuid": "848cda1a-cf2f-461a-b6da-8b2f772f4a5e",
-      "metrics": ["Min Power", "Max Power", "Actual TX Power"],
-      "dims": ["apMac"],
+      "metrics": [
+        "Min Power",
+        "Max Power",
+        "Actual TX Power"
+      ],
+      "dims": [
+        "apMac"
+      ],
       "notes": "6 GHz AFC power."
     },
     {
-      "name": "mlisa-apMesh", "display": "AP Mesh", "datasource_id": 17,
+      "name": "mlisa-apMesh",
+      "display": "AP Mesh",
+      "datasource_id": 17,
       "dataset_uuid": "f6209bb4-88a3-4535-8d09-c3bf9d1e89ac",
-      "metrics": ["Hops", "RSSI", "Tx Client MCS Rate", "Rx Client MCS Rate", "Tx Packet Bytes", "Rx Packet Bytes", "Tx Packet Frames", "Rx Packet Frames"],
-      "dims": ["apMac", "apName", "apModel", "meshChannel", "meshRole", "meshSSID", "status"]
+      "metrics": [
+        "Tx Packet Frames",
+        "Rx Packet Frames",
+        "Hops",
+        "RSSI",
+        "Tx Packet Bytes",
+        "Rx Packet Bytes",
+        "Tx Client MCS Rate",
+        "Rx Client MCS Rate"
+      ],
+      "dims": [
+        "apMac",
+        "apName",
+        "apSerial",
+        "apModel",
+        "apLocation",
+        "apDescription",
+        "apFwVersion",
+        "apIp",
+        "apExtIp",
+        "tag",
+        "zoneName",
+        "apGroupName",
+        "tagList"
+      ]
     },
     {
-      "name": "mlisa-apPeer", "display": "AP Peer", "datasource_id": 18,
+      "name": "mlisa-apPeer",
+      "display": "AP Peer",
+      "datasource_id": 18,
       "dataset_uuid": "701024e1-f910-469a-979d-61644a34a7e3",
-      "metrics": ["Max SNR", "Min SNR"],
-      "dims": ["apMac"]
+      "metrics": [
+        "Max SNR",
+        "Min SNR"
+      ],
+      "dims": [
+        "apMac",
+        "apName",
+        "apSerial",
+        "apModel",
+        "apLocation",
+        "apDescription",
+        "apFwVersion",
+        "apIp",
+        "apExtIp",
+        "tag",
+        "zoneName",
+        "apGroupName",
+        "tagList"
+      ]
     },
     {
-      "name": "rogueAp", "display": "AP Rogues", "datasource_id": 13,
+      "name": "rogueAp",
+      "display": "AP Rogues",
+      "datasource_id": 13,
       "dataset_uuid": "3f2e3373-8bad-4ced-997b-1ab8b66f73a3",
-      "metrics": ["Rogue AP Count", "Max Rogue SNR"],
-      "dims": ["apMac"]
+      "metrics": [
+        "Rogue AP Count",
+        "Max Rogue SNR"
+      ],
+      "dims": [
+        "apMac",
+        "apName",
+        "apSerial",
+        "apModel",
+        "apLocation",
+        "apDescription",
+        "apFwVersion",
+        "apIp",
+        "apExtIp",
+        "tag",
+        "zoneName",
+        "apGroupName",
+        "tagList"
+      ]
     },
     {
-      "name": "wifiCalling", "display": "AP WiFi Calling", "datasource_id": 10,
+      "name": "wifiCalling",
+      "display": "AP WiFi Calling",
+      "datasource_id": 10,
       "dataset_uuid": "d5137319-bfa6-49e4-90d1-51830f480739",
-      "metrics": ["Call Duration", "Total Traffic", "Downlink Traffic", "Uplink Traffic"],
-      "dims": ["apMac"]
+      "metrics": [
+        "Call Duration",
+        "Total Traffic",
+        "Uplink Traffic",
+        "Downlink Traffic"
+      ],
+      "dims": [
+        "apMac",
+        "apName",
+        "apSerial",
+        "apModel",
+        "apLocation",
+        "apDescription",
+        "apFwVersion",
+        "apIp",
+        "apExtIp",
+        "tag",
+        "zoneName",
+        "apGroupName",
+        "tagList"
+      ]
     },
     {
-      "name": "switchInventory", "display": "Switch Inventory", "datasource_id": 11,
+      "name": "switchInventory",
+      "display": "Switch Inventory",
+      "datasource_id": 11,
       "dataset_uuid": "362e741d-7040-4456-906b-7ab1b7c97a44",
-      "metrics": ["Switch Count", "Total Switches", "Online", "Offline", "Always Online", "Ever Offline", "Offline Duration", "CPU (%)", "Memory (%)", "CPU Utilization (%)", "Memory Utilization (%)", "Free memory", "Total memory", "PoE Usage (mW)", "PoE Free (mW)", "PoE Total (mW)", "PoE Utilization (%)", "Total Attempted Count", "Total Allowed Count", "Total Dhcp Clients Attempted", "Total Dhcp Clients Succeeded", "Actual Temperature", "Warning Temperature", "Shutdown Temperature", "IPv4 Unicast Utilization (%)", "IPv6 Unicast Utilization (%)", "IPv4 Multicast Utilization (%)", "IPv6 Multicast Utilization (%)", "ARP Utilization (%)", "MAC Utilization (%)"],
-      "dims": ["switchId", "switchName", "switchIp", "switchGroupLevelOneName", "isStack", "numOfPorts", "numOfSwitchUnits"],
+      "metrics": [
+        "Switch Count",
+        "Total Switches",
+        "Online",
+        "Offline",
+        "Always Online",
+        "Ever Offline",
+        "Offline Duration",
+        "CPU (%)",
+        "Memory (%)",
+        "CPU Utilization (%)",
+        "Memory Utilization (%)",
+        "Free memory",
+        "Total memory",
+        "PoE Usage (mW)",
+        "PoE Free (mW)",
+        "PoE Total (mW)",
+        "PoE Utilization (%)",
+        "Total Attempted Count",
+        "Total Allowed Count",
+        "Total Dhcp Clients Attempted",
+        "Total Dhcp Clients Succeeded",
+        "Actual Temperature",
+        "Warning Temperature",
+        "Shutdown Temperature",
+        "IPv4 Unicast Utilization (%)",
+        "IPv6 Unicast Utilization (%)",
+        "IPv4 Multicast Utilization (%)",
+        "IPv6 Multicast Utilization (%)",
+        "ARP Utilization (%)",
+        "MAC Utilization (%)"
+      ],
+      "dims": [
+        "switchId",
+        "switchName",
+        "switchIp",
+        "switchGroupLevelOneName",
+        "isStack",
+        "numOfPorts",
+        "numOfSwitchUnits"
+      ],
       "notes": "Switch health. switchName = friendly name; switchGroupLevelOneName = Venue. SCALE QUIRK: 'CPU Utilization (%)' & 'Memory Utilization (%)' are 0-100; 'PoE Utilization (%)' is a 0-1 fraction (format with .0%). Switch MAC shows as switchId; switchGroupLevelOneName = Venue."
     },
     {
-      "name": "switchNetwork", "display": "Switch Network", "datasource_id": 6,
+      "name": "switchNetwork",
+      "display": "Switch Network",
+      "datasource_id": 6,
       "dataset_uuid": "fd8c7e2a-be25-4dfc-ac2c-303a288f34ce",
-      "metrics": ["Switch Count", "Switch Unit Count", "Total Switches", "Online", "Offline", "Always Online", "Ever Offline", "In Errors", "Out Errors", "CRC", "In Discards", "Out Discards", "In Bits Per Sec", "Out Bits Per Sec", "In Utilization (%)", "Out Utilization (%)", "Port Count", "Rx Packets", "Tx Packets", "Short Packets", "Giant Packets", "Rx Broadcast Count", "Rx Multicast Count", "MTU", "Port PoE Utilization (%)", "Link Down Count", "Traffic (Total)", "Traffic (Downlink)", "Traffic (Uplink)"],
-      "dims": ["switchId", "switchName", "switchUnitId", "portMac", "portName", "portNumber", "portSpeed", "portVlans"]
+      "metrics": [
+        "Switch Count",
+        "Switch Unit Count",
+        "Total Switches",
+        "Online",
+        "Offline",
+        "Always Online",
+        "Ever Offline",
+        "In Errors",
+        "Out Errors",
+        "CRC",
+        "In Discards",
+        "Out Discards",
+        "In Bits Per Sec",
+        "Out Bits Per Sec",
+        "In Utilization (%)",
+        "Out Utilization (%)",
+        "Port Count",
+        "Rx Packets",
+        "Tx Packets",
+        "Short Packets",
+        "Giant Packets",
+        "Rx Broadcast Count",
+        "Rx Multicast Count",
+        "MTU",
+        "Port PoE Utilization (%)",
+        "Link Down Count",
+        "Traffic (Total)",
+        "Traffic (Downlink)",
+        "Traffic (Uplink)"
+      ],
+      "dims": [
+        "switchId",
+        "switchName",
+        "switchUnitId",
+        "portMac",
+        "portName",
+        "portNumber",
+        "portSpeed",
+        "portVlans"
+      ]
     },
     {
-      "name": "mlisa-edgeAvc", "display": "Edge AVC", "datasource_id": 19,
+      "name": "mlisa-edgeAvc",
+      "display": "Edge AVC",
+      "datasource_id": 19,
       "dataset_uuid": "246b1864-9847-4169-965e-65c42e16a917",
-      "metrics": ["Traffic (Total)", "Traffic (Downlink)", "Traffic (Uplink)", "Unique Client MAC Count", "Unique Edge Count", "Unique Edge Cluster Count"],
-      "dims": ["clusterRole", "wlanId"],
+      "metrics": [
+        "Traffic (Total)",
+        "Traffic (Downlink)",
+        "Traffic (Uplink)",
+        "Unique Client MAC Count",
+        "Unique Edge Count",
+        "Unique Edge Cluster Count"
+      ],
+      "dims": [
+        "clusterRole",
+        "wlanId"
+      ],
       "notes": "RUCKUS Edge app visibility (not in the 19-cube sheet)."
     }
   ],
-  "not_in_r1": ["AP Alarms (use apEvents instead)", "Controller Inventory (SmartZone-only)"]
+  "not_in_r1": [
+    "AP Alarms (use apEvents instead)",
+    "Controller Inventory (SmartZone-only)"
+  ]
 }
