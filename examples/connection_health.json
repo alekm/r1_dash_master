@@ -3,10 +3,17 @@
   "time_range": "Last week",
   "rows": [
     [
-      {"type": "bignum", "dataset": "mlisa-apConnectionStats", "title": "Success Rate", "width": 4,
+      {"type": "bignum", "dataset": "mlisa-apConnectionStats", "title": "Success Rate", "width": 3,
        "metric": {"sql": "1.0 * SUM(successCount) / SUM(attemptCount)", "label": "Success Rate"}, "format": ".1%"},
-      {"type": "bignum", "dataset": "mlisa-apConnectionStats", "title": "Total Attempts", "width": 4, "metric": "Attempt Count"},
-      {"type": "bignum", "dataset": "mlisa-apConnectionStats", "title": "Total Failures", "width": 4, "metric": "Failure Count"}
+      {"type": "bignum", "dataset": "mlisa-apConnectionStats", "title": "Total Attempts", "width": 3, "metric": "Attempt Count"},
+      {"type": "bignum", "dataset": "mlisa-apConnectionStats", "title": "Total Failures", "width": 3, "metric": "Failure Count"},
+      {"type": "bignum", "dataset": "mlisa-clientConnectionStats", "title": "Clients Affected", "width": 3, "metric": "Unique Client MAC Count"}
+    ],
+    [
+      {"type": "table", "dataset": "mlisa-apConnectionStats", "title": "Success Rate by Venue (click to filter)", "width": 12,
+       "groupby": ["zoneName"],
+       "metrics": [{"sql": "1.0 * SUM(successCount) / SUM(attemptCount)", "label": "Success Rate"}, "Attempt Count", "Failure Count"],
+       "column_formats": {"Success Rate": ".1%"}, "row_limit": 25}
     ],
     [
       {"type": "funnel", "dataset": "mlisa-apConnectionStats", "title": "Onboarding Funnel by Stage", "width": 6,
@@ -17,6 +24,19 @@
     [
       {"type": "line", "dataset": "mlisa-apConnectionStats", "title": "Success Rate Over Time", "width": 12,
        "metrics": [{"sql": "1.0 * SUM(successCount) / SUM(attemptCount)", "label": "Success Rate"}], "format": ".1%"}
+    ],
+    [
+      {"type": "bar", "dataset": "mlisa-clientConnectionStats", "title": "Top Connection Event Reasons", "width": 6,
+       "metrics": ["Event Count"], "x": "reasonCode", "row_limit": 15},
+      {"type": "pie", "dataset": "mlisa-clientConnectionStats", "title": "Events by Security Protocol", "width": 6,
+       "metric": "Event Count", "groupby": ["wlanEncryption"]}
+    ],
+    [
+      {"type": "table", "dataset": "mlisa-clientConnectionStats", "title": "Events by Client Manufacturer (who)", "width": 6,
+       "groupby": ["manufacturer"], "metrics": ["Event Count", "Unique Client MAC Count"], "row_limit": 20},
+      {"type": "pie", "dataset": "mlisa-clientConnectionStats", "title": "Failures by Connection Stage", "width": 6,
+       "metric": "Event Count", "groupby": ["failureType"],
+       "filter": ["failureType", ["eap", "radius", "assoc", "auth", "dhcp", "anqp", "l3-auth"]]}
     ]
   ]
 }
