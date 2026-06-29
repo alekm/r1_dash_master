@@ -31,6 +31,15 @@ chart shape:
 """
 import json, os, uuid, zipfile, shutil
 
+# Fixed namespace so UUIDs are deterministic: same (title, chart position) ->
+# same UUID every build, so re-importing a board UPDATES it in place instead
+# of spawning a duplicate.
+_NS = uuid.UUID("6f1d4b2a-9c3e-5a7f-8b21-d1da54a00000")
+
+
+def _stable_uuid(*parts):
+    return str(uuid.uuid5(_NS, "|".join(str(p) for p in parts)))
+
 HEIGHT = {"bignum": 30}
 DEFAULT_HEIGHT = 50
 
@@ -68,7 +77,9 @@ def _tfilter(tr, sid):
 
 
 def _dfilter(col, val, sid):
-    return {"expressionType": "SIMPLE", "subject": col, "operator": "==", "comparator": val,
+    # list/tuple value -> IN filter; scalar -> equality
+    op = "IN" if isinstance(val, (list, tuple)) else "=="
+    return {"expressionType": "SIMPLE", "subject": col, "operator": op, "comparator": val,
             "clause": "WHERE", "sqlExpression": None, "isExtra": False, "isNew": False,
             "datasourceWarning": False, "filterOptionName": f"dfilter_{sid}_{col}"}
 
@@ -263,6 +274,9 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
         ms = [_sqlmetric(m, sid, i) for i, m in enumerate(chart["metrics"])]
         pm = [_sqlmetric(m, sid, 100 + i) for i, m in enumerate(chart.get("percent_of_total", []))]
         gb = chart["groupby"]
+        # per-column number formats: {"<metric label>": "<d3 format>"} -> Superset column_config
+        column_config = {lbl: {"d3NumberFormat": fmt}
+                         for lbl, fmt in chart.get("column_formats", {}).items()}
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
             "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
             "extras": {"having": "", "where": ""}, "applied_time_extras": {}, "columns": gb, "metrics": ms,
@@ -270,11 +284,12 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
             "series_limit": 0, "order_desc": True, "url_params": {}, "custom_params": {},
             "custom_form_data": {}, "post_processing": []}],
             "form_data": {**base, "viz_type": "table", "query_mode": "aggregate", "groupby": gb,
-                          "metrics": ms, "percent_metrics": pm, "adhoc_filters": afilt,
+                          "metrics": ms, "percent_metrics": pm, "adhoc_filters": afilt, "column_config": column_config,
                           "row_limit": chart.get("row_limit", 50), "server_pagination": True, "order_desc": True},
             "result_format": "json", "result_type": "full"}
         p = {**base, "viz_type": "table", "query_mode": "aggregate", "groupby": gb, "all_columns": [],
              "percent_metrics": pm, "metrics": ms, "adhoc_filters": afilt, "order_by_cols": [],
+             "column_config": column_config,
              "row_limit": chart.get("row_limit", 50), "server_pagination": True, "order_desc": True,
              "table_timestamp_format": "smart_date", "color_scheme": "acxColor"}
         return "table", p, qc
@@ -398,7 +413,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
 def _dashboard_yaml(title, tenant, rows, charts_meta):
     L = ["dashboard_title: " + title, "description: null", "css: null", "slug: null",
          "certified_by: null", "certification_details: null", "published: true",
-         f"uuid: {uuid.uuid4()}"]
+         f"uuid: {_stable_uuid('dashboard', title)}"]
     if tenant:
         L += ["metadata:", "  tenant_ids:", f"  - {tenant}"]
     else:
@@ -501,7 +516,7 @@ def build_dashboard(spec, catalog, out_path, sid_base=900000):
             ch["_time_range"] = default_tr
             ds = by_name[ch["dataset"]]
             sid += 1
-            ch_uuid = str(uuid.uuid4())
+            ch_uuid = _stable_uuid("chart", title, ri, ci, ch["title"])
             viz, params, qc = _build_chart(ch, ds, tenant, dash_id, sid)
             yaml_txt = _chart_yaml(viz, params, qc, sid, ch_uuid, ds["dataset_uuid"])
             fn = (ch["title"].replace(" ", "_").replace("/", "_").replace("(", "")
