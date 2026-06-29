@@ -342,7 +342,23 @@
         "Actual TX Power"
       ],
       "dims": [
-        "apMac"
+        "apMac",
+        "zoneName",
+        "apGroupName",
+        "tagList",
+        "apName",
+        "apSerial",
+        "apModel",
+        "apLocation",
+        "apDescription",
+        "apFwVersion",
+        "apIp",
+        "apExtIp",
+        "geoLocation",
+        "powerMode",
+        "status",
+        "availableChannel",
+        "tag"
       ],
       "notes": "6 GHz AFC power."
     },
