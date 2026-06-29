@@ -4,6 +4,8 @@ An MCP server that builds **importable RUCKUS One Data Studio dashboards** from 
 simple declarative spec. Output is a `.zip` you import via **Data Studio → Settings
 → Import Dashboard**. Pure offline generation — no R1 API credentials needed.
 
+📺 **Setup & usage in Claude Desktop:** https://youtu.be/-gU7yu6liOw
+
 Data Studio is Apache Superset on an Apache Druid backend (`deployment: ALTO`). This
 tool encodes the reverse-engineered dataset catalog and the chart/query grammar so you
 (or an agent) can build valid dashboards without learning Superset internals or guessing
@@ -87,7 +89,20 @@ python3 builder.py examples/network_intelligence.json out/network_intelligence_I
 pip install -r requirements.txt
 python3 server.py
 ```
-Then register in your MCP client config (command: `python3`, args: `["/home/alek/src/r1_dash_master/server.py"]`).
+Then register it in your MCP client. For **Claude Desktop** (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "r1-dash-master": {
+      "command": "python3",
+      "args": ["/path/to/r1_dash_master/server.py"]
+    }
+  }
+}
+```
+
+Walkthrough: https://youtu.be/-gU7yu6liOw
 
 ## Examples vs. Gallery
 
