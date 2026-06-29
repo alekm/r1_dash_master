@@ -798,7 +798,7 @@
     "availableChannel": "Available Channel",
     "manufacturer": "OS Manufacturer",
     "encryption": "Encryption Method",
-    "geoLocation": null,
+    "geoLocation": "Geo Location",
     "wlanId": null,
     "clusterRole": null,
     "port": "Port",
