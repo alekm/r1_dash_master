@@ -660,13 +660,21 @@
         "MAC Utilization (%)"
       ],
       "dims": [
-        "switchId",
-        "switchName",
-        "switchIp",
         "switchGroupLevelOneName",
+        "switchName",
         "isStack",
+        "tagList",
+        "switchId",
+        "switchSerial",
+        "switchModel",
+        "switchStatus",
+        "switchFirmware",
+        "upTime",
         "numOfPorts",
-        "numOfSwitchUnits"
+        "numOfSwitchUnits",
+        "routerId",
+        "switchIp",
+        "tag"
       ],
       "notes": "Switch health. switchName = friendly name; switchGroupLevelOneName = Venue. SCALE QUIRK: 'CPU Utilization (%)' & 'Memory Utilization (%)' are 0-100; 'PoE Utilization (%)' is a 0-1 fraction (format with .0%). Switch MAC shows as switchId; switchGroupLevelOneName = Venue."
     },
@@ -796,7 +804,7 @@
     "switchName": "Switch Name",
     "switchId": "Switch MAC",
     "switchIp": "Switch IP",
-    "switchGroupLevelOneName": "Switch Group Name",
+    "switchGroupLevelOneName": "Venue",
     "switchUnitId": "Switch Unit Id",
     "isStack": "Is Stack",
     "numOfPorts": "Number of Ports",
@@ -845,6 +853,12 @@
     "sourcePort": "Source Port",
     "ipProtocol": "IP Protocol",
     "applicationName": "Application Name",
-    "applicationCategory": "Application Category"
+    "applicationCategory": "Application Category",
+    "switchSerial": "Switch Serial",
+    "switchModel": "Switch Model",
+    "switchStatus": "Switch Status",
+    "switchFirmware": "Switch Firmware",
+    "upTime": "Switch Uptime",
+    "routerId": "Router ID"
   }
 }
