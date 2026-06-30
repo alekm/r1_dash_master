@@ -46,11 +46,13 @@ def describe_dataset(name: str) -> str:
         name: internal dataset name (e.g. 'binnedSessions', 'mlisa-apConnectionStats').
               Accepts the display name too.
     """
-    labels = CATALOG.get("dim_labels", {})
+    global_labels = CATALOG.get("dim_labels", {})
     for d in CATALOG["datasets"]:
         if name in (d["name"], d["display"]):
             out = {k: d[k] for k in ("name", "display", "datasource_id", "dataset_uuid",
                                      "metrics", "dims") }
+            # per-dataset labels take precedence; fall back to the global map
+            labels = {**global_labels, **d.get("labels", {})}
             # show each dim as "internal (Data Studio label)" when a label is known
             out["dims_labeled"] = [
                 f"{dim} ({labels[dim]})" if labels.get(dim) else dim
