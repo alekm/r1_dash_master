@@ -79,7 +79,7 @@
         "mloCapability",
         "mloLinks"
       ],
-      "notes": "Richest client dataset. radio values '2.4'/'5'. zoneName = Venue. RF-quality + throughput-estimate metrics live here.",
+      "notes": "Richest client dataset. radio/band values '2.4'/'5'/'6' (6 GHz; per-band metrics label it '6(5) GHz'). zoneName = Venue. RF-quality + throughput-estimate metrics live here.",
       "labels": {
         "zoneName": "Venue",
         "tag": "Tag",
