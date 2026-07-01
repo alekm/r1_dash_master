@@ -7,7 +7,7 @@ simple declarative spec. Output is a `.zip` you import via **Data Studio → Set
 📺 **Setup & usage in Claude Desktop:** https://youtu.be/-gU7yu6liOw
 
 Data Studio is Apache Superset on an Apache Druid backend (`deployment: ALTO`). This
-tool encodes the reverse-engineered dataset catalog and the chart/query grammar so you
+tool encodes the dataset catalog and the chart/query grammar so you
 (or an agent) can build valid dashboards without learning Superset internals or guessing
 field names.
 
