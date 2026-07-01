@@ -1,0 +1,53 @@
+{
+  "title": "Delivered Throughput",
+  "time_range": "Last week",
+  "grain": "day",
+  "rows": [
+    [
+      {"type": "bignum", "dataset": "sessionsSummary", "title": "Avg Delivered Kbps / Client", "width": 3,
+       "metric": {"sql": "1.0 * SUM(traffic) * 8 / NULLIF(SUM(sessionDuration),0)", "label": "Delivered Kbps/Client"}, "format": ".1f"},
+      {"type": "bignum", "dataset": "sessionsSummary", "title": "Avg Delivered Kbps / Client (Downlink)", "width": 3,
+       "metric": {"sql": "1.0 * SUM(txBytes) * 8 / NULLIF(SUM(sessionDuration),0)", "label": "DL Kbps/Client"}, "format": ".1f"},
+      {"type": "bignum", "dataset": "sessionsSummary", "title": "Total Traffic", "width": 3, "metric": "User Traffic(Total)"},
+      {"type": "bignum", "dataset": "sessionsSummary", "title": "Unique Clients", "width": 3, "metric": "Unique Client MAC Count"}
+    ],
+    [
+      {"type": "table", "dataset": "sessionsSummary", "title": "Delivered Kbps/Client by Venue (click to filter)", "width": 12,
+       "groupby": ["zoneName"],
+       "metrics": [
+         {"sql": "1.0 * SUM(traffic) * 8 / NULLIF(SUM(sessionDuration),0)", "label": "Delivered Kbps/Client"},
+         "Session Count", "Unique Client MAC Count", "User Traffic(Total)"],
+       "column_formats": {"Delivered Kbps/Client": ".1f"},
+       "percent_of_total": ["User Traffic(Total)"], "row_limit": 50}
+    ],
+    [
+      {"type": "table", "dataset": "sessionsSummary", "title": "Top Talkers (click a client to filter the board)", "width": 12,
+       "groupby": ["hostname", "clientMac", "deviceType"],
+       "metrics": [
+         "User Traffic(Total)",
+         {"sql": "1.0 * SUM(traffic) * 8 / NULLIF(SUM(sessionDuration),0)", "label": "Delivered Kbps/Client"},
+         {"sql": "1.0 * SUM(txBytes) * 8 / NULLIF(SUM(sessionDuration),0)", "label": "Downlink Kbps/Client"},
+         "Session Count"],
+       "column_formats": {"Delivered Kbps/Client": ".1f", "Downlink Kbps/Client": ".1f"}, "row_limit": 50}
+    ],
+    [
+      {"type": "table", "dataset": "sessionsSummary", "title": "Delivered Kbps/Client by Device Type", "width": 6,
+       "groupby": ["deviceType"],
+       "metrics": [
+         {"sql": "1.0 * SUM(traffic) * 8 / NULLIF(SUM(sessionDuration),0)", "label": "Delivered Kbps/Client"},
+         "Session Count", "User Traffic(Total)"],
+       "column_formats": {"Delivered Kbps/Client": ".1f"}, "row_limit": 25},
+      {"type": "bar", "dataset": "sessionsSummary", "title": "Delivered Kbps/Client by Device Type", "width": 6,
+       "x": "deviceType",
+       "metrics": [{"sql": "1.0 * SUM(traffic) * 8 / NULLIF(SUM(sessionDuration),0)", "label": "Delivered Kbps/Client"}],
+       "format": ".0f", "row_limit": 25}
+    ],
+    [
+      {"type": "line", "dataset": "sessionsSummary", "title": "Delivered Kbps/Client Over Time", "width": 12,
+       "metrics": [
+         {"sql": "1.0 * SUM(traffic) * 8 / NULLIF(SUM(sessionDuration),0)", "label": "Delivered Kbps/Client"},
+         {"sql": "1.0 * SUM(txBytes) * 8 / NULLIF(SUM(sessionDuration),0)", "label": "Downlink Kbps/Client"}],
+       "format": ".0f"}
+    ]
+  ]
+}

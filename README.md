@@ -115,7 +115,7 @@ MCP server into your client for you (that's what the [video](https://youtu.be/-g
 - **`gallery/*.zip`** — prebuilt, **ready-to-import** dashboards. Since bundles are tenant-less,
   they auto-rescope to whatever EC you import them into. Grab one → Data Studio → Settings →
   Import Dashboard. Current set: executive_overview, capacity_rf, connection_health,
-  network_intelligence, switch_health, chart_gallery.
+  network_intelligence, switch_health, chart_gallery, delivered_throughput.
 - Regenerate the gallery from specs anytime: **`./build_gallery.sh`** (keeps zips in sync).
 
 ## Status
