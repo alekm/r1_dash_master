@@ -75,9 +75,9 @@ charts below. The builder preserves row order from the spec, so order your `rows
   and integer division floors — always `1.0 *` (or `100.0 *`). See `raw_columns` in the catalog.
 - **Rate vs share:** a true rate = SQL metric + `.1%` format. `percent_of_total` (table
   `percent_metrics`) means "% of the column total" (contribution), not "format as %".
-- **Band values are tri-band:** the `radio`/`band` dimensions take `"2.4"`, `"5"`, and `"6"`
-  (6 GHz). Per-band metrics label the 6 GHz variant `6(5) GHz` (e.g. `Avg 6(5) GHz Downlink
-  Throughput`). Don't hardcode just 2.4/5 in filters or groupbys.
+- **Band values are tri-band:** the `radio`/`band` dimensions take `"2.4"`, `"5"`, and
+  `"6(5)"` — the 6 GHz band's literal value is the string `"6(5)"`, NOT `"6"` (confirmed from
+  the per-band metric SQL). Per-band metrics label it `6(5) GHz`. Don't hardcode just 2.4/5.
 - Dashboards are **transmutable across ECs** — keep titles generic, swap `tenant_id`.
 
 ## CLI (without MCP)

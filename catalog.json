@@ -79,7 +79,7 @@
         "mloCapability",
         "mloLinks"
       ],
-      "notes": "Richest client dataset. radio/band values '2.4'/'5'/'6' (6 GHz; per-band metrics label it '6(5) GHz'). zoneName = Venue. RF-quality + throughput-estimate metrics live here.",
+      "notes": "Richest client dataset. radio/band values '2.4'/'5'/'6(5)' — the 6 GHz band's literal radio token is '6(5)' (matches the per-band metric names), NOT '6'. zoneName = Venue. RF-quality + throughput-estimate metrics live here. 'Client Throughput' = avg(throughputEstimate)*1024 over positive samples only (debug_count is the sample-count denominator) — a modeled client CAPABILITY estimate (MCS/RF-derived), NOT delivered throughput; reads high and flat regardless of load, and excluding zero samples biases it toward active-capability.",
       "labels": {
         "zoneName": "Venue",
         "tag": "Tag",
@@ -371,7 +371,7 @@
         "txPower",
         "channelWidth"
       ],
-      "notes": "AP-side traffic/throughput/MCS/latency per AP. 'Avg AP Downlink Throughput' + per-band 'Avg 2.4/5/6(5) GHz Downlink Throughput' are active-time (~PHY), not sustained. Casing differs: 'Avg AP-to-RUCKUS One Heartbeat Latency' vs 'Avg AP-to-Ruckus One Ping Latency'. 'AP Tx Droppped Data Frames' has a triple-p typo in the real metric name.",
+      "notes": "AP-side traffic/throughput/MCS/latency per AP. 'Avg AP Downlink Throughput' + per-band 'Avg 2.4/5/6(5) GHz Downlink Throughput' = AVG(capacity)*1024*1024 filtered to capacity>0 per radio band ('2.4'/'5'/'6(5)') — a modeled AP CAPACITY estimate, NOT delivered/sustained throughput (reads ~PHY-high). Same estimate family as client 'Client Throughput'. For delivered load use Traffic (Total/Downlink/Uplink) / time. Casing differs: 'Avg AP-to-RUCKUS One Heartbeat Latency' vs 'Avg AP-to-Ruckus One Ping Latency'. 'AP Tx Droppped Data Frames' has a triple-p typo in the real metric name.",
       "labels": {
         "zoneName": "Venue",
         "tag": "Tag",
