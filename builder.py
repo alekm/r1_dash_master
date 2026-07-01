@@ -466,6 +466,44 @@ def _bad_time_range(tr):
     return False
 
 
+# Chart type registry — single source of truth for valid types and their required/optional keys.
+# 'metric' = ONE metric (string, or {"sql","label"}); 'metrics' = a LIST of them. That singular
+# vs plural split is the most common mistake, so validate_spec enforces it per type.
+CHART_TYPES = {
+    "bignum":       {"required": ["metric"],                 "optional": ["format"],
+                     "desc": "single KPI number"},
+    "bignum_trend": {"required": ["metric"],                 "optional": ["format", "grain"],
+                     "desc": "KPI with sparkline (latest bucket value + trend line)"},
+    "line":         {"required": ["metrics"],                "optional": ["x", "groupby", "stacked", "format", "grain"],
+                     "desc": "line over time (or over dimension 'x')"},
+    "bar":          {"required": ["metrics"],                "optional": ["x", "groupby", "stacked", "format", "grain"],
+                     "desc": "bar over time (or over dimension 'x')"},
+    "area":         {"required": ["metrics"],                "optional": ["x", "groupby", "stacked", "format", "grain"],
+                     "desc": "stacked/area over time"},
+    "scatter":      {"required": ["metrics"],                "optional": ["x", "groupby", "format", "grain"],
+                     "desc": "scatter (categorical x-axis)"},
+    "pie":          {"required": ["metric", "groupby"],      "optional": ["filter", "row_limit"],
+                     "desc": "share of one metric across dim(s)"},
+    "table":        {"required": ["metrics", "groupby"],     "optional": ["percent_of_total", "column_formats", "row_limit"],
+                     "desc": "aggregate table; sorts by the first metric descending"},
+    "gauge":        {"required": ["metric"],                 "optional": ["groupby", "format", "row_limit"],
+                     "desc": "gauge snapshot of one metric"},
+    "heatmap":      {"required": ["metric", "groupby"],      "optional": ["format", "grain", "row_limit"],
+                     "desc": "time x (first groupby dim) heatmap"},
+    "funnel":       {"required": ["metric"],                 "optional": ["groupby", "format", "row_limit"],
+                     "desc": "funnel of one metric across a stage dim"},
+    "pivot":        {"required": ["metrics"],                "optional": ["rows", "columns", "format", "row_limit"],
+                     "desc": "pivot table (rows x columns of dims, metrics in cells)"},
+    "mixed":        {"required": ["metrics"],                "optional": ["metrics_b", "groupby", "groupby_b", "format", "format_b"],
+                     "desc": "bars (metrics) + line (metrics_b) on one time axis"},
+    "tree":         {"required": ["metric", "id", "parent"], "optional": ["name", "row_limit"],
+                     "desc": "tree/hierarchy (id -> parent), sized by metric"},
+    "bubble":       {"required": ["entity", "x", "y", "size"], "optional": ["row_limit"],
+                     "desc": "bubble; entity is a DIM, x/y/size are METRICS"},
+}
+VALID_TYPES = tuple(CHART_TYPES)
+
+
 def validate_spec(spec, catalog):
     """Return a list of problem strings ([] == clean). Checks datasets, saved-metric & dim names."""
     by_name = {d["name"]: d for d in catalog["datasets"]}
@@ -513,10 +551,23 @@ def validate_spec(spec, catalog):
             for col, _ in _norm_filters(ch):
                 if col not in dset:
                     problems.append(f"{loc}: filter col {col!r} not a dim of {ds['name']}")
-            if ch.get("type") not in ("bignum", "bignum_trend", "line", "bar", "area", "scatter",
-                                       "pie", "table", "gauge", "heatmap", "funnel", "pivot",
-                                       "mixed", "tree", "bubble"):
-                problems.append(f"{loc}: bad type {ch.get('type')!r}")
+            typ = ch.get("type")
+            if typ not in CHART_TYPES:
+                problems.append(f"{loc}: bad type {typ!r} (valid: {', '.join(VALID_TYPES)})")
+                continue
+            # per-type required keys — so validate_spec agrees with build_dashboard
+            # (build accesses these directly and would otherwise raise a raw KeyError).
+            for key in CHART_TYPES[typ]["required"]:
+                val = ch.get(key)
+                empty = val is None or (isinstance(val, (list, dict, str)) and len(val) == 0)
+                if empty:
+                    hint = ""
+                    if key == "metric" and ch.get("metrics"):
+                        hint = " — this type wants 'metric' (a single metric), not 'metrics' (a list)"
+                    elif key == "metrics" and ch.get("metric"):
+                        hint = " — this type wants 'metrics' (a list), not 'metric' (a single metric)"
+                    problems.append(f"{loc}: type {typ!r} requires {key!r}{hint} "
+                                    f"(required: {CHART_TYPES[typ]['required']})")
     return problems
 
 

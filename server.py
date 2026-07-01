@@ -67,6 +67,27 @@ def describe_dataset(name: str) -> str:
 
 
 @mcp.tool()
+def describe_chart_types() -> str:
+    """List every valid chart 'type' and the keys each one requires/accepts.
+
+    Use this before writing a spec so you don't guess type names or field shapes.
+    KEY RULE: 'metric' = ONE metric (a string or {"sql","label"}); 'metrics' = a
+    LIST of them. Each type wants one or the other — mixing them is the most common
+    error, and validate_spec now catches it.
+    """
+    lines = ["Chart types (set as chart 'type'). metric = single; metrics = list:", ""]
+    for name, spec in builder.CHART_TYPES.items():
+        lines.append(f"- {name}: {spec['desc']}")
+        lines.append(f"    required: {', '.join(spec['required'])}"
+                     + (f"   optional: {', '.join(spec['optional'])}" if spec.get("optional") else ""))
+    lines += ["",
+              "A metric is a saved-metric name (string) OR a custom-SQL metric "
+              '{"sql": "1.0*SUM(a)/SUM(b)", "label": "Rate"}.',
+              "Common chart keys: dataset (required), title, width (1-12), time_range, format (d3), filter."]
+    return "\n".join(lines)
+
+
+@mcp.tool()
 def validate_spec(spec: dict) -> str:
     """Validate a dashboard spec against the catalog WITHOUT building.
 
@@ -85,11 +106,18 @@ def build_dashboard(spec: dict, filename: str = "") -> str:
     """Build an importable Data Studio dashboard .zip from a spec.
 
     The spec is a dict with: title (generic name, NOT tenant-specific),
-    tenant_id (the EC), optional time_range, and rows (list of rows; each row a
-    list of chart dicts). See SPEC.md / examples for chart shapes. Supports
-    big-number / line / pie / table; saved metrics; custom-SQL metrics
-    ({"sql": "1.0*SUM(a)/SUM(b)", "label": "..."}); percent-of-total (table);
-    dimension + time filters; d3 number formats.
+    optional tenant_id (the EC), optional time_range, and rows (list of rows; each
+    row a list of chart dicts). Call describe_chart_types() for the full list of
+    types and their required keys.
+
+    Each chart needs 'type' and 'dataset'. KEY GOTCHA — 'metric' vs 'metrics':
+    bignum/bignum_trend/pie/gauge/heatmap/funnel/tree take 'metric' (a SINGLE
+    metric); line/bar/area/scatter/table/pivot/mixed take 'metrics' (a LIST);
+    bubble takes 'entity'+'x'+'y'+'size'. A metric is a saved-metric name (string)
+    or a custom-SQL metric {"sql": "1.0*SUM(a)/SUM(b)", "label": "..."}. Also
+    supports percent-of-total (table), dimension + time filters, d3 number formats.
+    validate_spec now checks per-type required keys, so a clean validate means build
+    will not raise a KeyError.
 
     Args:
         spec: the dashboard spec dict.
