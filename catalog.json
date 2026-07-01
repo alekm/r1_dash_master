@@ -79,7 +79,7 @@
         "mloCapability",
         "mloLinks"
       ],
-      "notes": "Richest client dataset. radio/band values '2.4'/'5'/'6(5)' — the 6 GHz band's literal radio token is '6(5)' (matches the per-band metric names), NOT '6'. zoneName = Venue. RF-quality + throughput-estimate metrics live here. 'Client Throughput' = avg(throughputEstimate)*1024 over positive samples only (debug_count is the sample-count denominator) — a modeled client CAPABILITY estimate (MCS/RF-derived), NOT delivered throughput; reads high and flat regardless of load, and excluding zero samples biases it toward active-capability.",
+      "notes": "Richest client dataset. radio/band values '2.4'/'5'/'6(5)' \u2014 the 6 GHz band's literal radio token is '6(5)' (matches the per-band metric names), NOT '6'. zoneName = Venue. RF-quality + throughput-estimate metrics live here. 'Client Throughput' = avg(throughputEstimate)*1024 over positive samples only (debug_count is the sample-count denominator) \u2014 a modeled client CAPABILITY estimate (MCS/RF-derived), NOT delivered throughput; reads high and flat regardless of load, and excluding zero samples biases it toward active-capability.",
       "labels": {
         "zoneName": "Venue",
         "tag": "Tag",
@@ -188,7 +188,7 @@
         "mloCapability",
         "mloLinks"
       ],
-      "notes": "Engagement: dwell time, sessions, roaming. WARNING: 'User Traffic(Total)' has NO space before paren in this dataset (unlike binnedSessions).",
+      "notes": "Engagement: dwell time, sessions, roaming. WARNING: 'User Traffic(Total)' has NO space before paren in this dataset (unlike binnedSessions). sessionDuration is in MILLISECONDS (not seconds/labelless) \u2014 Avg Session Duration formats it as e.g. '32m 6.4s'. DELIVERED THROUGHPUT (real, not the capacity estimate): custom-SQL metric '1.0 * SUM(traffic) * 8 / NULLIF(SUM(sessionDuration),0)' = time-weighted avg Kbps per connected client (bytes*8/ms = Kbps directly; /1000 for Mbps). txBytes=downlink, rxBytes=uplink. This is the only true delivered-throughput measure in Data Studio; runs ~600x lower than 'Client Throughput' (capacity estimate).",
       "labels": {
         "zoneName": "Venue",
         "tag": "Tag",
@@ -228,6 +228,12 @@
         "disconnectTime": "Disconnect Time",
         "mloCapability": "Client Capabilities of MLO",
         "mloLinks": "Client Link of MLO"
+      },
+      "raw_columns": {
+        "User Traffic(Total)": "traffic",
+        "User Traffic (Downlink)": "txBytes",
+        "User Traffic (Uplink)": "rxBytes",
+        "Total Session Duration": "sessionDuration (MILLISECONDS)"
       }
     },
     {
@@ -371,7 +377,7 @@
         "txPower",
         "channelWidth"
       ],
-      "notes": "AP-side traffic/throughput/MCS/latency per AP. 'Avg AP Downlink Throughput' + per-band 'Avg 2.4/5/6(5) GHz Downlink Throughput' = AVG(capacity)*1024*1024 filtered to capacity>0 per radio band ('2.4'/'5'/'6(5)') — a modeled AP CAPACITY estimate, NOT delivered/sustained throughput (reads ~PHY-high). Same estimate family as client 'Client Throughput'. For delivered load use Traffic (Total/Downlink/Uplink) / time. Casing differs: 'Avg AP-to-RUCKUS One Heartbeat Latency' vs 'Avg AP-to-Ruckus One Ping Latency'. 'AP Tx Droppped Data Frames' has a triple-p typo in the real metric name.",
+      "notes": "AP-side traffic/throughput/MCS/latency per AP. 'Avg AP Downlink Throughput' + per-band 'Avg 2.4/5/6(5) GHz Downlink Throughput' = AVG(capacity)*1024*1024 filtered to capacity>0 per radio band ('2.4'/'5'/'6(5)') \u2014 a modeled AP CAPACITY estimate, NOT delivered/sustained throughput (reads ~PHY-high). Same estimate family as client 'Client Throughput'. For delivered load use Traffic (Total/Downlink/Uplink) / time. Casing differs: 'Avg AP-to-RUCKUS One Heartbeat Latency' vs 'Avg AP-to-Ruckus One Ping Latency'. 'AP Tx Droppped Data Frames' has a triple-p typo in the real metric name.",
       "labels": {
         "zoneName": "Venue",
         "tag": "Tag",
