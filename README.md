@@ -98,6 +98,31 @@ a tool limitation.) A panel that imports but renders empty almost always traces 
    orphan charts whose position or title changed (chart identity is keyed on title + row/col).
    **Fix:** import to a **fresh dashboard title** rather than overwriting.
 
+### Re-importing while you iterate on the same dashboard
+
+This is the most common self-inflicted cause of the empty/duplicate panels above, and it
+bites hardest **mid-session when you're iterating on one idea — adding, removing, renaming,
+or reordering charts on the same board and re-importing after each change.** Chart identity
+is derived from `(dashboard title, row, column, chart title)`, and the dashboard from its
+title alone, so:
+
+- Re-import is **idempotent only when the spec is unchanged** (same titles, same layout) — it
+  cleanly overwrites the same objects in place.
+- The moment a chart is **added, removed, renamed, or moved**, its identity changes: Superset
+  creates the new version and **leaves the old one behind as an orphan** (on no dashboard).
+  Enough churn accumulates a pile of stale, sometimes-empty tiles that look like a data problem.
+
+Pick one discipline and stick to it for the session:
+
+- **Overwrite in place** — keep the dashboard title, chart titles, and layout stable across
+  imports so every re-import updates the same board.
+- **Fresh each pass** — bump the dashboard title each iteration and delete the previous board,
+  so every import is a clean set with nothing orphaned.
+
+Avoid the middle ground: repeatedly reshaping a same-named board and re-importing. If you've
+already accumulated orphans, clean them in the UI — delete charts that belong to no dashboard,
+remove duplicate boards, then re-import your current spec once.
+
 ## CLI (without MCP)
 
 ```bash
