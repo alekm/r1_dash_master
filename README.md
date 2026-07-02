@@ -80,6 +80,24 @@ charts below. The builder preserves row order from the spec, so order your `rows
   the per-band metric SQL). Per-band metrics label it `6(5) GHz`. Don't hardcode just 2.4/5.
 - Dashboards are **transmutable across ECs** — keep titles generic, swap `tenant_id`.
 
+## Why a panel imports empty (troubleshooting)
+
+Bundles are **tenant-less**: there is no `datasets/` folder. Charts bind to a dataset
+**by UUID** and reference metrics **by name string**, and both must already exist in the
+**target EC**. (Multi-dataset dashboards are fully supported — see
+`examples/network_intelligence.json`; if a board looks limited to one dataset, that's not
+a tool limitation.) A panel that imports but renders empty almost always traces to one of:
+
+1. **Saved-metric name not present on the target cube.** A metric like `"Client Throughput"`
+   only resolves if that EC's cube defines it. **Fix:** use a self-contained custom-SQL metric
+   (`{"sql": "...", "label": "..."}`) instead of a saved-metric name — it carries its own
+   definition and doesn't depend on the target.
+2. **Dataset not provisioned in that EC.** The UUID resolves to nothing. Confirm the dataset
+   exists in the target Data Studio before importing.
+3. **Overwrite-orphaning on re-import.** Re-importing over an existing published dashboard can
+   orphan charts whose position or title changed (chart identity is keyed on title + row/col).
+   **Fix:** import to a **fresh dashboard title** rather than overwriting.
+
 ## CLI (without MCP)
 
 ```bash
