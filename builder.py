@@ -1,7 +1,7 @@
 """R1 Dash Master — build importable RUCKUS One Data Studio (Superset) dashboard
 bundles from a declarative spec. Offline; output is a .zip imported via
 Data Studio > Settings > Import Dashboard. Spec format: see README.md."""
-import json, os, uuid, zipfile, shutil
+import json, os, re, uuid, zipfile, shutil
 
 # Fixed namespace -> deterministic uuid5 so re-imports update a board in place.
 _NS = uuid.UUID("6f1d4b2a-9c3e-5a7f-8b21-d1da54a00000")
@@ -9,6 +9,22 @@ _NS = uuid.UUID("6f1d4b2a-9c3e-5a7f-8b21-d1da54a00000")
 
 def _stable_uuid(*parts):
     return str(uuid.uuid5(_NS, "|".join(str(p) for p in parts)))
+
+
+# Chart/dashboard filenames are derived from free-text titles. Windows-reserved
+# characters corrupt them: a ':' makes the OS open an NTFS Alternate Data Stream,
+# so the visible file lands 0 bytes and the truncated name loses its .yaml
+# extension — the chart ships empty and never imports, with no error. Strip every
+# reserved char (< > : " / \ | ? *) and control char here. Uniqueness comes from
+# the sid appended by the caller, so a lossy (even empty) slug is safe.
+_UNSAFE_FN = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
+
+
+def _safe_filename(text):
+    s = text.replace("%", "pct").replace("(", "").replace(")", "")
+    s = _UNSAFE_FN.sub(" ", s)          # reserved/control -> space, then...
+    s = re.sub(r"\s+", "_", s.strip())  # ...collapse whitespace runs to one _
+    return s or "chart"
 
 HEIGHT = {"bignum": 30}
 DEFAULT_HEIGHT = 50
@@ -602,13 +618,18 @@ def build_dashboard(spec, catalog, out_path, sid_base=900000):
             ch_uuid = _stable_uuid("chart", title, ri, ci, ch["title"])
             viz, params, qc = _build_chart(ch, ds, tenant, dash_id, sid)
             yaml_txt = _chart_yaml(viz, params, qc, sid, ch_uuid, ds["dataset_uuid"])
-            fn = (ch["title"].replace(" ", "_").replace("/", "_").replace("(", "")
-                  .replace(")", "").replace("%", "pct") + f"_{sid}.yaml")
-            with open(os.path.join(root, "charts", fn), "w") as f:
+            fn = f"{_safe_filename(ch['title'])}_{sid}.yaml"
+            chart_path = os.path.join(root, "charts", fn)
+            with open(chart_path, "w") as f:
                 f.write(yaml_txt)
+            # Never zip a gutted bundle: if a chart file came out empty, fail loudly
+            # rather than reporting success (this is what made the NTFS-ADS bug silent).
+            if os.path.getsize(chart_path) == 0:
+                raise RuntimeError(f"chart {ch['title']!r} wrote an empty file ({fn}); "
+                                   "refusing to build a bundle with a gutted chart")
             charts_meta[(ri, ci)] = {"sid": sid, "uuid": ch_uuid}
 
-    with open(os.path.join(root, "dashboards", f"{title.replace(' ', '_')}_{dash_id}.yaml"), "w") as f:
+    with open(os.path.join(root, "dashboards", f"{_safe_filename(title)}_{dash_id}.yaml"), "w") as f:
         f.write(_dashboard_yaml(title, tenant, rows, charts_meta))
     with open(os.path.join(root, "metadata.yaml"), "w") as f:
         f.write("version: 1.0.0\ntype: Dashboard\ndeployment: ALTO\n")
