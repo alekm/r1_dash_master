@@ -77,6 +77,19 @@ def _adhoc_filters(chart, sid, tr):
     return out
 
 
+def _qfilters(chart):
+    # query_context.queries[0].filters uses a plain {col,op,val} shape, distinct
+    # from the SIMPLE-expressionType adhoc filters used in form_data. Without this,
+    # a chart-level 'filter' is only cosmetically recorded (form_data) and never
+    # actually constrains the executed query — confirmed via two 'filter'-scoped
+    # bignum_trend charts (radio=5 vs radio=2.4) returning byte-identical data.
+    out = []
+    for col, val in _norm_filters(chart):
+        op = "IN" if isinstance(val, (list, tuple)) else "=="
+        out.append({"col": col, "op": op, "val": val})
+    return out
+
+
 def _chart_yaml(viz, params, qc, sid, ch_uuid, ds_uuid):
     return (
         f"slice_name: {json.dumps(params['_slice_name'])}\n"
@@ -133,7 +146,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
     if typ == "bignum":
         m = _sqlmetric(chart["metric"], sid, 0)
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
-            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}] + _qfilters(chart),
             "extras": {"having": "", "where": ""}, "applied_time_extras": {}, "columns": [],
             "metrics": [m], "annotation_layers": [], "series_limit": 0, "order_desc": True,
             "url_params": {}, "custom_params": {}, "custom_form_data": {}}],
@@ -162,7 +175,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
                          "label": "__time", "expressionType": "SQL"}
             xaxis, index, qextras = "__time", ["__time"], {"time_grain_sqla": g, "having": "", "where": ""}
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
-            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}] + _qfilters(chart),
             "extras": qextras, "applied_time_extras": {},
             "columns": [base_axis] + list(gb),
             "metrics": ms, "orderby": [[ms[0], False]], "annotation_layers": [], "row_limit": 10000,
@@ -202,7 +215,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
     if typ == "bignum_trend":
         m = _sqlmetric(chart["metric"], sid, 0)
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
-            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}] + _qfilters(chart),
             "extras": {"time_grain_sqla": g, "having": "", "where": ""}, "applied_time_extras": {},
             "columns": [{"timeGrain": g, "columnType": "BASE_AXIS", "sqlExpression": "__time",
                          "label": "__time", "expressionType": "SQL"}],
@@ -227,7 +240,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
         m = _sqlmetric(chart["metric"], sid, 0)
         gb = chart.get("groupby", [])
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
-            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}] + _qfilters(chart),
             "extras": {"having": "", "where": ""}, "applied_time_extras": {}, "columns": gb,
             "metrics": [m], "annotation_layers": [], "row_limit": chart.get("row_limit", 10),
             "series_limit": 0, "order_desc": True, "url_params": {}, "custom_params": {}, "custom_form_data": {}}],
@@ -247,7 +260,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
         ydim = gbspec[0] if isinstance(gbspec, list) else gbspec
         hm_rl = chart.get("row_limit", 10000)
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
-            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}] + _qfilters(chart),
             "extras": {"time_grain_sqla": g, "having": "", "where": ""}, "applied_time_extras": {},
             "columns": [{"timeGrain": g, "columnType": "BASE_AXIS", "sqlExpression": "__time",
                          "label": "__time", "expressionType": "SQL"}, ydim],
@@ -294,7 +307,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
         column_config = {lbl: {"d3NumberFormat": fmt}
                          for lbl, fmt in chart.get("column_formats", {}).items()}
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
-            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}] + _qfilters(chart),
             "extras": {"having": "", "where": ""}, "applied_time_extras": {}, "columns": gb, "metrics": ms,
             "orderby": [[ms[0], False]], "annotation_layers": [], "row_limit": chart.get("row_limit", 50),
             "series_limit": 0, "order_desc": True, "url_params": {}, "custom_params": {},
@@ -314,7 +327,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
         m = _sqlmetric(chart["metric"], sid, 0)
         gb = chart.get("groupby", [])
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
-            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}] + _qfilters(chart),
             "extras": {"having": "", "where": ""}, "applied_time_extras": {}, "columns": gb,
             "metrics": [m], "annotation_layers": [], "row_limit": chart.get("row_limit", 10),
             "series_limit": 0, "order_desc": True, "url_params": {}, "custom_params": {}, "custom_form_data": {}}],
@@ -332,7 +345,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
         rows = chart.get("rows", [])
         cols = chart.get("columns", [])
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
-            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}] + _qfilters(chart),
             "extras": {"having": "", "where": ""}, "applied_time_extras": {}, "columns": cols + rows,
             "metrics": ms, "annotation_layers": [], "row_limit": chart.get("row_limit", 10000),
             "series_limit": 0, "order_desc": True, "url_params": {}, "custom_params": {}, "custom_form_data": {}}],
@@ -354,7 +367,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
         gbb = chart.get("groupby_b", [])
 
         def _q(metrics, groupby, drop):
-            return {"filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            return {"filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}] + _qfilters(chart),
                     "extras": {"time_grain_sqla": g, "having": "", "where": ""}, "applied_time_extras": {},
                     "columns": [{"columnType": "BASE_AXIS", "sqlExpression": "__time", "label": "__time",
                                  "expressionType": "SQL"}] + list(groupby),
@@ -387,7 +400,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
         idc, parc = chart["id"], chart["parent"]
         namec = chart.get("name", idc)
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
-            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}] + _qfilters(chart),
             "extras": {"having": "", "where": ""}, "applied_time_extras": {}, "columns": [idc, parc, namec],
             "metrics": [m], "annotation_layers": [], "row_limit": chart.get("row_limit", 100),
             "series_limit": 0, "order_desc": True, "url_params": {}, "custom_params": {}, "custom_form_data": {}}],
@@ -407,7 +420,7 @@ def _build_chart(chart, ds, tenant, dash_id, sid):
         msz = _sqlmetric(chart["size"], sid, 2)
         rl = chart.get("row_limit", 10000)
         qc = {"datasource": {"id": n, "type": "table"}, "force": False, "queries": [{
-            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}],
+            "filters": [{"col": "__time", "op": "TEMPORAL_RANGE", "val": tr}] + _qfilters(chart),
             "extras": {"having": "", "where": ""}, "applied_time_extras": {}, "columns": [ent],
             "metrics": [mx, my, msz], "annotation_layers": [], "row_limit": rl, "series_limit": 0,
             "order_desc": True, "url_params": {}, "custom_params": {}, "custom_form_data": {}}],

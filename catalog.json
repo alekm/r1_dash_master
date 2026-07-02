@@ -283,7 +283,7 @@
         "apGeoLocation",
         "radio"
       ],
-      "notes": "Airtime/congestion/headroom. Airtime values are fractions 0-1 (Utilization+Idle ~= 1).",
+      "notes": "Airtime/congestion/headroom. Airtime values are fractions 0-1 (Utilization+Idle ~= 1). These airtime metrics have no per-band variant (unlike binnedApTraffic's per-band throughput/MCS metrics), so to break airtime out by band add 'radio' (or a finer dim) to groupby, or apply a radio filter. Per-band airtime genuinely differs — a grouped per-AP table shows distinct 2.4 vs 5 GHz values across the fleet.",
       "labels": {
         "zoneName": "Venue",
         "tag": "Tag",
