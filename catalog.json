@@ -1142,7 +1142,7 @@
         "switchIp",
         "isStack"
       ],
-      "notes": "Switch health. switchName = friendly name; switchGroupLevelOneName = Venue. SCALE QUIRK: 'CPU Utilization (%)' & 'Memory Utilization (%)' are 0-100; 'PoE Utilization (%)' is a 0-1 fraction (format with .0%). Switch MAC shows as switchId; switchGroupLevelOneName = Venue.",
+      "notes": "Switch health. switchName = friendly name; switchGroupLevelOneName = Venue; Switch MAC shows as switchId. SCALE QUIRK (per-metric, NOT predictable by name or family — verify each): every utilization saved metric is 'SUM(rawCol)/SUM(debug_count)', a plain mean with NO unit conversion, so each metric's scale = whatever its raw column stores. STORED 0-100, so the built-in '%' format DOUBLE-SCALES x100 (raw 5.28 renders as 528%): 'CPU Utilization (%)', 'Memory Utilization (%)', 'MAC Utilization (%)' (raw macUtilization). STORED 0-1 fraction, so '%' format is correct: 'PoE Utilization (%)', 'ARP Utilization (%)', 'IPv4 Unicast Utilization (%)', 'IPv6 Unicast Utilization (%)' (raw arpUtilization/ipv4UnicastUtilization/ipv6UnicastUtilization). 'IPv4/IPv6 Multicast Utilization (%)' (raw ipv4/ipv6MulticastUtilization) UNCONFIRMED — all-zero in sampled EC — but almost certainly 0-1 like their IP-table siblings. Note MAC and ARP are BOTH forwarding-table utilizations yet differ, so scale cannot be inferred from meaning. To render a 0-100 metric correctly as a %, use custom SQL like '1.0 * SUM(macUtilization) / SUM(debug_count) / 100.0' with .1% format (renders 5.3%), or show the raw number under a (%) header with a plain .2f format (renders 5.28). Underlying inconsistency is in the ingested raw columns, not the metric SQL.",
       "labels": {
         "tag": "Tag",
         "tagList": "Tag List",
