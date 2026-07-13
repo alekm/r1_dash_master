@@ -19,7 +19,7 @@
        "row_limit": 50}
     ],
     [
-      {"type": "gauge", "dataset": "switchInventory", "title": "PoE Utilization", "width": 4, "metric": "PoE Utilization (%)", "format": ".0%"},
+      {"type": "gauge", "dataset": "switchInventory", "title": "PoE Utilization", "width": 4, "metric": "PoE Utilization (%)"},
       {"type": "line", "dataset": "switchInventory", "title": "CPU & Memory Utilization", "width": 8,
        "metrics": ["CPU Utilization (%)", "Memory Utilization (%)"]}
     ],
