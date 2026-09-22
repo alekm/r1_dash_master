@@ -9,7 +9,7 @@ import json
 import os
 from pathlib import Path
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 import builder
 
@@ -18,7 +18,7 @@ CATALOG = json.load(open(HERE / "catalog.json"))
 OUT_DIR = Path(os.environ.get("R1DM_OUT_DIR", HERE / "out"))
 OUT_DIR.mkdir(exist_ok=True)
 
-mcp = FastMCP("r1-dash-master")
+mcp = MCPServer("r1-dash-master")
 
 
 @mcp.tool()
