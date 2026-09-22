@@ -1,4 +1,5 @@
 {
+  "target": "r1",
   "title": "Switch Health",
   "time_range": "Last week",
   "rows": [
@@ -19,7 +20,7 @@
        "row_limit": 50}
     ],
     [
-      {"type": "gauge", "dataset": "switchInventory", "title": "PoE Utilization", "width": 4, "metric": "PoE Utilization (%)"},
+      {"type": "gauge", "dataset": "switchInventory", "title": "PoE Utilization", "width": 4, "metric": "PoE Utilization (%)", "format": ".0%"},
       {"type": "line", "dataset": "switchInventory", "title": "CPU & Memory Utilization", "width": 8,
        "metrics": ["CPU Utilization (%)", "Memory Utilization (%)"]}
     ],

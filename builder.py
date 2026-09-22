@@ -7,6 +7,22 @@ import json, os, re, uuid, zipfile, shutil
 _NS = uuid.UUID("6f1d4b2a-9c3e-5a7f-8b21-d1da54a00000")
 
 
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+# Target product -> catalog. Dataset ids and UUIDs are per-product and COLLIDE across
+# them (R1 id 10 is wifiCalling, Analytics id 10 is binnedSessions), and metric/dim
+# names mostly match, so a spec for the wrong product validates clean and then fails
+# or mis-binds on import. Every spec therefore names its target explicitly.
+TARGETS = {"r1": "catalog.json", "analytics": "catalog_analytics.json"}
+
+
+def load_catalog(target):
+    if target not in TARGETS:
+        raise ValueError(f"unknown target {target!r} (valid: {', '.join(TARGETS)})")
+    with open(os.path.join(HERE, TARGETS[target])) as f:
+        return json.load(f)
+
+
 def _stable_uuid(*parts):
     return str(uuid.uuid5(_NS, "|".join(str(p) for p in parts)))
 
@@ -539,6 +555,9 @@ def validate_spec(spec, catalog):
     problems = []
     if not spec.get("title"):
         problems.append("spec.title is required (use a generic, non-tenant name)")
+    want, have = spec.get("target"), catalog.get("target")
+    if want and have and want != have:
+        problems.append(f"spec.target is {want!r} but this catalog is for {have!r}")
     if _bad_time_range(spec.get("time_range")):
         problems.append(f"spec.time_range {spec['time_range']!r} is not a valid Data Studio range "
                         "(use Last day/week/month/quarter/year, or an explicit range)")
@@ -546,7 +565,21 @@ def validate_spec(spec, catalog):
     if not rows:
         problems.append("spec.rows is empty")
     for ri, row in enumerate(rows):
+        if not isinstance(row, list):
+            problems.append(f"rows[{ri}] must be a LIST of charts (got {type(row).__name__}); "
+                            "wrap a single chart in [ ]")
+            continue
+        # Superset drops the overflow of a row wider than the 12-column grid, with no
+        # error: the charts are in the bundle but absent from the imported dashboard.
+        width = sum(c.get("width", 4) for c in row if isinstance(c, dict))
+        if width > 12:
+            problems.append(f"rows[{ri}]: widths sum to {width}, over the 12-column grid — "
+                            "Superset silently drops the charts that overflow")
         for ci, ch in enumerate(row):
+            if not isinstance(ch, dict):
+                problems.append(f"rows[{ri}][{ci}] must be a chart object "
+                                f"(got {type(ch).__name__})")
+                continue
             loc = f"rows[{ri}][{ci}] '{ch.get('title','?')}'"
             if _bad_time_range(ch.get("time_range")):
                 problems.append(f"{loc}: time_range {ch['time_range']!r} is not a valid Data Studio "
@@ -554,6 +587,12 @@ def validate_spec(spec, catalog):
             ds = by_name.get(ch.get("dataset"))
             if not ds:
                 problems.append(f"{loc}: unknown dataset {ch.get('dataset')!r}")
+                continue
+            # A chart binds by dataset_uuid; import rejects the WHOLE bundle if it does
+            # not resolve in the target (verified: right id + wrong uuid still 500s).
+            if not ds.get("dataset_uuid"):
+                problems.append(f"{loc}: dataset {ds['name']!r} has no dataset_uuid in the "
+                                "catalog, so the bundle would be rejected on import")
                 continue
             mset, dset = set(ds["metrics"]), set(ds["dims"])
             is_bubble = ch.get("type") == "bubble"
@@ -644,16 +683,26 @@ def build_dashboard(spec, catalog, out_path, sid_base=900000):
 
     with open(os.path.join(root, "dashboards", f"{_safe_filename(title)}_{dash_id}.yaml"), "w") as f:
         f.write(_dashboard_yaml(title, tenant, rows, charts_meta))
+    # ALTO = RUCKUS One, MLISA = RUCKUS Analytics. The importer keys on this.
+    deployment = catalog.get("deployment", "ALTO")
     with open(os.path.join(root, "metadata.yaml"), "w") as f:
-        f.write("version: 1.0.0\ntype: Dashboard\ndeployment: ALTO\n")
+        f.write(f"version: 1.0.0\ntype: Dashboard\ndeployment: {deployment}\n")
 
     if os.path.exists(out_path):
         os.remove(out_path)
+    # Fixed timestamps + sorted entries make builds byte-reproducible, so the committed
+    # gallery only diffs when a bundle's content changes. 1980-01-01 is the zip epoch,
+    # which is also what Data Studio's own exports carry.
     with zipfile.ZipFile(out_path, "w", zipfile.ZIP_DEFLATED) as z:
-        for dp, _, fs in os.walk(root):
-            for f in fs:
+        for dp, dirs, fs in os.walk(root):
+            dirs.sort()
+            for f in sorted(fs):
                 full = os.path.join(dp, f)
-                z.write(full, os.path.relpath(full, work))
+                info = zipfile.ZipInfo(os.path.relpath(full, work), date_time=(1980, 1, 1, 0, 0, 0))
+                info.compress_type = zipfile.ZIP_DEFLATED
+                info.external_attr = 0o644 << 16
+                with open(full, "rb") as fh:
+                    z.writestr(info, fh.read())
     shutil.rmtree(work, ignore_errors=True)
     return {"output": out_path, "title": title, "charts": sid - (sid_base + 10),
             "datasets": sorted({ch["dataset"] for row in rows for ch in row})}
@@ -661,7 +710,16 @@ def build_dashboard(spec, catalog, out_path, sid_base=900000):
 
 if __name__ == "__main__":
     import sys
-    cat = json.load(open(os.path.join(os.path.dirname(__file__), "catalog.json")))
-    spec = json.load(open(sys.argv[1]))
-    out = sys.argv[2] if len(sys.argv) > 2 else "dashboard_IMPORT.zip"
-    print(build_dashboard(spec, cat, out))
+    args = sys.argv[1:]
+    target = None
+    if "--target" in args:  # overrides the spec's own target (build_gallery.sh uses this)
+        i = args.index("--target")
+        target = args[i + 1]
+        del args[i:i + 2]
+    spec = json.load(open(args[0]))
+    target = target or spec.get("target")
+    if not target:
+        sys.exit(f"spec has no 'target'; add one or pass --target ({' | '.join(TARGETS)})")
+    spec["target"] = target
+    out = args[1] if len(args) > 1 else "dashboard_IMPORT.zip"
+    print(build_dashboard(spec, load_catalog(target), out))

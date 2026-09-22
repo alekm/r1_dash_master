@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""R1 Dash Master — MCP server that builds importable RUCKUS One Data Studio
-(Superset) dashboard bundles from a declarative spec.
+"""R1 Dash Master — MCP server that builds importable Data Studio (Superset)
+dashboard bundles from a declarative spec, for RUCKUS One or RUCKUS Analytics.
 
 Pure offline generation: tools return / write a .zip you import via
-Data Studio > Settings > Import Dashboard. No R1 API auth required.
+Data Studio > Settings > Import Dashboard. No API auth required.
+
+Every call needs a target ('r1' or 'analytics'): the spec's own 'target' key, the
+tool's target argument, or the R1DM_TARGET environment variable as a default.
 """
 import json
 import os
@@ -14,40 +17,68 @@ from mcp.server.mcpserver import MCPServer
 import builder
 
 HERE = Path(__file__).parent
-CATALOG = json.load(open(HERE / "catalog.json"))
+CATALOGS = {t: builder.load_catalog(t) for t in builder.TARGETS}
+PRODUCT = {"r1": "RUCKUS One", "analytics": "RUCKUS Analytics"}
+# Optional default for single-product setups. Deliberately no built-in default:
+# a spec built for the wrong product binds to the wrong datasets.
+DEFAULT_TARGET = os.environ.get("R1DM_TARGET", "")
 OUT_DIR = Path(os.environ.get("R1DM_OUT_DIR", HERE / "out"))
-OUT_DIR.mkdir(exist_ok=True)
+OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 mcp = MCPServer("r1-dash-master")
 
 
+def _resolve(target):
+    """(target, catalog, None) or (None, None, error message)."""
+    t = target or DEFAULT_TARGET
+    if t in CATALOGS:
+        return t, CATALOGS[t], None
+    why = f"unknown target {t!r}" if t else "no target given"
+    return None, None, (f"ERROR: {why}. Say which product the dashboard is for: "
+                        f"target = {' | '.join(repr(k) for k in CATALOGS)} "
+                        f"({', '.join(f'{k} = {v}' for k, v in PRODUCT.items())}). "
+                        "Dataset ids and UUIDs differ between them.")
+
+
 @mcp.tool()
-def list_datasets() -> str:
-    """List all RUCKUS One Data Studio datasets available for dashboards.
+def list_datasets(target: str = "") -> str:
+    """List the Data Studio datasets available for dashboards on one product.
+
+    Args:
+        target: 'r1' (RUCKUS One) or 'analytics' (RUCKUS Analytics). The two
+                products carry different datasets and different identifiers.
 
     Returns each dataset's internal name (used in specs), display/cube name,
     datasource id, metric count, and dimension count.
     """
-    lines = ["RUCKUS One Data Studio datasets (use 'name' in specs):", ""]
-    for d in CATALOG["datasets"]:
+    t, catalog, err = _resolve(target)
+    if err:
+        return err
+    lines = [f"{PRODUCT[t]} Data Studio datasets (use 'name' in specs, target {t!r}):", ""]
+    for d in catalog["datasets"]:
         lines.append(f"- {d['name']}  (\"{d['display']}\", id {d['datasource_id']}) "
                      f"— {len(d['metrics'])} metrics, {len(d['dims'])} dims"
                      + (f" — {d['notes']}" if d.get("notes") else ""))
-    lines.append("")
-    lines.append("Not available in R1: " + "; ".join(CATALOG.get("not_in_r1", [])))
+    if catalog.get("not_in_r1"):
+        lines += ["", "Not available in R1: " + "; ".join(catalog["not_in_r1"])]
     return "\n".join(lines)
 
 
 @mcp.tool()
-def describe_dataset(name: str) -> str:
+def describe_dataset(name: str, target: str = "") -> str:
     """Get the exact metric and dimension names for one dataset.
 
     Args:
         name: internal dataset name (e.g. 'binnedSessions', 'mlisa-apConnectionStats').
               Accepts the display name too.
+        target: 'r1' or 'analytics'. Names mostly match across products but not
+                entirely (Analytics has controller dims, R1 has tag/tagList).
     """
-    global_labels = CATALOG.get("dim_labels", {})
-    for d in CATALOG["datasets"]:
+    t, catalog, err = _resolve(target)
+    if err:
+        return err
+    global_labels = catalog.get("dim_labels", {})
+    for d in catalog["datasets"]:
         if name in (d["name"], d["display"]):
             out = {k: d[k] for k in ("name", "display", "datasource_id", "dataset_uuid",
                                      "metrics", "dims") }
@@ -58,12 +89,12 @@ def describe_dataset(name: str) -> str:
                 f"{dim} ({labels[dim]})" if labels.get(dim) else dim
                 for dim in d["dims"]
             ]
-            for opt in ("notes", "raw_columns"):
+            for opt in ("notes", "raw_columns", "metric_sql"):
                 if d.get(opt):
                     out[opt] = d[opt]
             return json.dumps(out, indent=2)
-    names = ", ".join(d["name"] for d in CATALOG["datasets"])
-    return f"ERROR: dataset {name!r} not found. Available: {names}"
+    names = ", ".join(d["name"] for d in catalog["datasets"])
+    return f"ERROR: dataset {name!r} not found in {t!r}. Available: {names}"
 
 
 @mcp.tool()
@@ -91,11 +122,15 @@ def describe_chart_types() -> str:
 def validate_spec(spec: dict) -> str:
     """Validate a dashboard spec against the catalog WITHOUT building.
 
-    Checks dataset names, saved-metric names, groupby/filter dimension names.
+    Checks dataset names, saved-metric names, groupby/filter dimension names,
+    against the catalog of the spec's 'target' ('r1' or 'analytics').
     Returns 'OK' or a list of problems. Always run this before build_dashboard
     when unsure of field names.
     """
-    problems = builder.validate_spec(spec, CATALOG)
+    t, catalog, err = _resolve(spec.get("target"))
+    if err:
+        return err
+    problems = builder.validate_spec({**spec, "target": t}, catalog)
     if not problems:
         return "OK — spec is valid."
     return "PROBLEMS:\n  - " + "\n  - ".join(problems)
@@ -105,8 +140,9 @@ def validate_spec(spec: dict) -> str:
 def build_dashboard(spec: dict, filename: str = "") -> str:
     """Build an importable Data Studio dashboard .zip from a spec.
 
-    The spec is a dict with: title (generic name, NOT tenant-specific),
-    optional tenant_id (the EC), optional time_range, and rows (list of rows; each
+    The spec is a dict with: target ('r1' = RUCKUS One or 'analytics' = RUCKUS
+    Analytics; REQUIRED unless R1DM_TARGET is set), title (generic name, NOT
+    tenant-specific), optional tenant_id (the EC), optional time_range, and rows (list of rows; each
     row a list of chart dicts). Call describe_chart_types() for the full list of
     types and their required keys.
 
@@ -121,18 +157,29 @@ def build_dashboard(spec: dict, filename: str = "") -> str:
 
     Args:
         spec: the dashboard spec dict.
-        filename: optional output filename (defaults to <title>_IMPORT.zip).
+        filename: optional output filename (defaults to <title>_<target>_IMPORT.zip).
 
     Returns the output path and a summary, or validation errors.
     """
-    if not filename:
-        filename = (spec.get("title", "dashboard").replace(" ", "_") + "_IMPORT.zip")
-    out_path = str(OUT_DIR / filename)
+    t, catalog, err = _resolve(spec.get("target"))
+    if err:
+        return err
+    spec = {**spec, "target": t}
+    # The target is in the default name so a bundle on disk says which product it is for.
+    stem = filename or f"{spec.get('title', 'dashboard')}_{t}_IMPORT"
+    if stem.lower().endswith(".zip"):
+        stem = stem[:-4]
+    # filename is caller-supplied: reuse the builder's slug so a path separator or a
+    # '..' can't escape OUT_DIR (build_dashboard unlinks out_path before writing).
+    out = (OUT_DIR / f"{builder._safe_filename(stem)}.zip").resolve()
+    if out.parent != OUT_DIR.resolve():
+        return f"BUILD FAILED: refusing to write outside {OUT_DIR}"
+    out_path = str(out)
     try:
-        summary = builder.build_dashboard(spec, CATALOG, out_path)
+        summary = builder.build_dashboard(spec, catalog, out_path)
     except ValueError as e:
         return f"BUILD FAILED:\n{e}"
-    return (f"Built {summary['charts']} charts -> {summary['output']}\n"
+    return (f"Built {summary['charts']} charts for {PRODUCT[t]} -> {summary['output']}\n"
             f"Datasets used: {', '.join(summary['datasets'])}\n"
             f"Import via Data Studio > Settings > Import Dashboard.")
 
