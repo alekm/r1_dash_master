@@ -12,7 +12,7 @@ import json
 import os
 from pathlib import Path
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 import builder
 
@@ -25,7 +25,7 @@ DEFAULT_TARGET = os.environ.get("R1DM_TARGET", "")
 OUT_DIR = Path(os.environ.get("R1DM_OUT_DIR", HERE / "out"))
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-mcp = FastMCP("r1-dash-master")
+mcp = MCPServer("r1-dash-master")
 
 
 def _resolve(target):
