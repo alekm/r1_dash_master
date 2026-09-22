@@ -154,11 +154,28 @@ python3 builder.py examples/network_intelligence.json out/network_intelligence_I
 python3 builder.py examples/network_intelligence.json out/ni_analytics.zip --target analytics
 ```
 
-## Run as MCP
+## Tests
 
 ```bash
-pip install -r requirements.txt
-python3 server.py
+python3 -m unittest discover -s tests
+```
+
+`tests/test_gallery.py` fails when a committed gallery zip no longer matches its spec.
+Run `./build_gallery.sh` and commit the result. Builds are byte-reproducible, so a
+rebuild only shows a diff when a bundle's content actually changed.
+
+## Run as MCP
+
+Needs **Python 3.10+** and the **MCP Python SDK 2.x** (`mcp>=2.0,<3`). SDK 2.0 renamed
+`FastMCP` to `MCPServer`, so this server does not run on 1.x.
+
+Install it into its **own virtualenv**. Other MCP servers on the same Python may still
+be on SDK 1.x, and installing 2.x globally breaks them at startup:
+
+```bash
+python3 -m venv ~/.venvs/r1-dash-master
+~/.venvs/r1-dash-master/bin/pip install -r requirements.txt
+~/.venvs/r1-dash-master/bin/python server.py
 ```
 
 **Easiest:** just ask Claude to set it up — point it at this repo and it'll wire the
@@ -170,13 +187,16 @@ MCP server into your client for you (that's what the [video](https://youtu.be/-g
 {
   "mcpServers": {
     "r1-dash-master": {
-      "command": "python3",
+      "command": "/home/you/.venvs/r1-dash-master/bin/python",
       "args": ["/path/to/r1_dash_master/server.py"],
       "env": { "R1DM_TARGET": "r1" }
     }
   }
 }
 ```
+
+`R1DM_TARGET` is optional. Set it (`r1` or `analytics`) if you only ever build for one
+product. Leave it out and every spec must carry its own `"target"`.
 
 ## Examples vs. Gallery
 
