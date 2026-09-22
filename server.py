@@ -16,7 +16,7 @@ import builder
 HERE = Path(__file__).parent
 CATALOG = json.load(open(HERE / "catalog.json"))
 OUT_DIR = Path(os.environ.get("R1DM_OUT_DIR", HERE / "out"))
-OUT_DIR.mkdir(exist_ok=True)
+OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 mcp = FastMCP("r1-dash-master")
 
@@ -125,9 +125,15 @@ def build_dashboard(spec: dict, filename: str = "") -> str:
 
     Returns the output path and a summary, or validation errors.
     """
-    if not filename:
-        filename = (spec.get("title", "dashboard").replace(" ", "_") + "_IMPORT.zip")
-    out_path = str(OUT_DIR / filename)
+    stem = filename or (spec.get("title", "dashboard") + "_IMPORT")
+    if stem.lower().endswith(".zip"):
+        stem = stem[:-4]
+    # filename is caller-supplied: reuse the builder's slug so a path separator or a
+    # '..' can't escape OUT_DIR (build_dashboard unlinks out_path before writing).
+    out = (OUT_DIR / f"{builder._safe_filename(stem)}.zip").resolve()
+    if out.parent != OUT_DIR.resolve():
+        return f"BUILD FAILED: refusing to write outside {OUT_DIR}"
+    out_path = str(out)
     try:
         summary = builder.build_dashboard(spec, CATALOG, out_path)
     except ValueError as e:
