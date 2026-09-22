@@ -1,4 +1,5 @@
 {
+  "target": "r1",
   "title": "Delivered Throughput",
   "time_range": "Last week",
   "grain": "day",

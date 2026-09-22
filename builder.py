@@ -7,6 +7,22 @@ import json, os, re, uuid, zipfile, shutil
 _NS = uuid.UUID("6f1d4b2a-9c3e-5a7f-8b21-d1da54a00000")
 
 
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+# Target product -> catalog. Dataset ids and UUIDs are per-product and COLLIDE across
+# them (R1 id 10 is wifiCalling, Analytics id 10 is binnedSessions), and metric/dim
+# names mostly match, so a spec for the wrong product validates clean and then fails
+# or mis-binds on import. Every spec therefore names its target explicitly.
+TARGETS = {"r1": "catalog.json", "analytics": "catalog_analytics.json"}
+
+
+def load_catalog(target):
+    if target not in TARGETS:
+        raise ValueError(f"unknown target {target!r} (valid: {', '.join(TARGETS)})")
+    with open(os.path.join(HERE, TARGETS[target])) as f:
+        return json.load(f)
+
+
 def _stable_uuid(*parts):
     return str(uuid.uuid5(_NS, "|".join(str(p) for p in parts)))
 
@@ -539,6 +555,9 @@ def validate_spec(spec, catalog):
     problems = []
     if not spec.get("title"):
         problems.append("spec.title is required (use a generic, non-tenant name)")
+    want, have = spec.get("target"), catalog.get("target")
+    if want and have and want != have:
+        problems.append(f"spec.target is {want!r} but this catalog is for {have!r}")
     if _bad_time_range(spec.get("time_range")):
         problems.append(f"spec.time_range {spec['time_range']!r} is not a valid Data Studio range "
                         "(use Last day/week/month/quarter/year, or an explicit range)")
@@ -691,7 +710,16 @@ def build_dashboard(spec, catalog, out_path, sid_base=900000):
 
 if __name__ == "__main__":
     import sys
-    cat = json.load(open(os.path.join(os.path.dirname(__file__), "catalog.json")))
-    spec = json.load(open(sys.argv[1]))
-    out = sys.argv[2] if len(sys.argv) > 2 else "dashboard_IMPORT.zip"
-    print(build_dashboard(spec, cat, out))
+    args = sys.argv[1:]
+    target = None
+    if "--target" in args:  # overrides the spec's own target (build_gallery.sh uses this)
+        i = args.index("--target")
+        target = args[i + 1]
+        del args[i:i + 2]
+    spec = json.load(open(args[0]))
+    target = target or spec.get("target")
+    if not target:
+        sys.exit(f"spec has no 'target'; add one or pass --target ({' | '.join(TARGETS)})")
+    spec["target"] = target
+    out = args[1] if len(args) > 1 else "dashboard_IMPORT.zip"
+    print(build_dashboard(spec, load_catalog(target), out))

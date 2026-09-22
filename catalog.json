@@ -1,6 +1,7 @@
 {
   "_comment": "RUCKUS One Data Studio dataset catalog. Display name = the Data Studio/Data Explorer cube name; name = internal Druid dataset name used in chart YAML; datasource_id = the N in 'N__table'. Metric/dim names are EXACT (case + spacing matter; some differ per dataset). raw_columns maps a few display metrics to the underlying physical column for custom-SQL metrics.",
   "deployment": "ALTO",
+  "target": "r1",
   "regions_note": "Datasets are the shared analytics schema across R1 tenants; same uuids should port across ECs (verify on first import).",
   "datasets": [
     {

@@ -1,27 +1,50 @@
 # R1 Dash Master
 
-An MCP server that builds **importable RUCKUS One Data Studio dashboards** from a
-simple declarative spec. Output is a `.zip` you import via **Data Studio → Settings
-→ Import Dashboard**. Pure offline generation — no R1 API credentials needed.
+An MCP server that builds **importable Data Studio dashboards** for **RUCKUS One** and
+**RUCKUS Analytics** from a simple declarative spec. Output is a `.zip` you import via
+**Data Studio → Settings → Import Dashboard**. Pure offline generation — no API
+credentials needed.
 
 📺 **Setup & usage in Claude Desktop:** https://youtu.be/-gU7yu6liOw
 
-Data Studio is Apache Superset on an Apache Druid backend (`deployment: ALTO`). This
-tool encodes the dataset catalog and the chart/query grammar so you
+Data Studio is Apache Superset on an Apache Druid backend. This
+tool encodes the dataset catalogs and the chart/query grammar so you
 (or an agent) can build valid dashboards without learning Superset internals or guessing
 field names.
 
+## Targets: RUCKUS One vs RUCKUS Analytics
+
+Every spec says which product it is for with `"target"`:
+
+| target | product | catalog | bundle `deployment` |
+| --- | --- | --- | --- |
+| `r1` | RUCKUS One | `catalog.json` (18 datasets) | `ALTO` |
+| `analytics` | RUCKUS Analytics | `catalog_analytics.json` (19 datasets) | `MLISA` |
+
+There is **no default**, on purpose. Both products run the same Data Studio and the
+same chart grammar, and metric/dimension names mostly match — but every dataset has a
+**different UUID and usually a different numeric id** in each (R1 id 10 is `wifiCalling`;
+Analytics id 10 is `binnedSessions`). A bundle built for the wrong product is rejected on
+import. For a single-product setup, set `R1DM_TARGET=r1` (or `analytics`) in the MCP
+server's environment instead of repeating it.
+
+Name differences that *do* exist: Analytics adds controller dimensions (`ctrlName`,
+`ctrlMac`, `ctrlModel`, …); R1 has `tag`/`tagList`; `binnedApTraffic` latency metrics say
+`AP-to-SZ` in Analytics vs `AP-to-RUCKUS One` in R1. `apAlarms` and `controllerInventory`
+exist only in Analytics. `validate_spec` checks names against the chosen target.
+
 ## Tools
 
-- **`list_datasets()`** — all 18 R1 datasets (internal name, cube name, id, counts).
-- **`describe_dataset(name)`** — exact metric + dimension names for one dataset.
-- **`validate_spec(spec)`** — check a spec against the catalog before building.
-- **`build_dashboard(spec, filename?)`** — emit an importable `.zip` (written to `out/`).
+- **`list_datasets(target)`** — every dataset for that product (internal name, cube name, id, counts).
+- **`describe_dataset(name, target)`** — exact metric + dimension names (Analytics also shows each metric's SQL).
+- **`validate_spec(spec)`** — check a spec against its target's catalog before building.
+- **`build_dashboard(spec, filename?)`** — emit an importable `.zip` (written to `out/`, named `<title>_<target>_IMPORT.zip`).
 
 ## Spec format
 
 ```jsonc
 {
+  "target": "r1",                        // REQUIRED: "r1" (RUCKUS One) or "analytics" (RUCKUS Analytics)
   "title": "Network Intelligence",      // generic — NEVER tenant-specific (bundles are portable across ECs)
   // tenant_id: OPTIONAL — omit it. Import auto-rescopes to the target EC (tenant). Only include to hard-pin a tenant.
   "time_range": "Last week",            // default for all charts (Last day/week/month/quarter, previous calendar week/month, or explicit range)
@@ -127,6 +150,8 @@ remove duplicate boards, then re-import your current spec once.
 
 ```bash
 python3 builder.py examples/network_intelligence.json out/network_intelligence_IMPORT.zip
+# build the same spec for the other product:
+python3 builder.py examples/network_intelligence.json out/ni_analytics.zip --target analytics
 ```
 
 ## Run as MCP
@@ -146,7 +171,8 @@ MCP server into your client for you (that's what the [video](https://youtu.be/-g
   "mcpServers": {
     "r1-dash-master": {
       "command": "python3",
-      "args": ["/path/to/r1_dash_master/server.py"]
+      "args": ["/path/to/r1_dash_master/server.py"],
+      "env": { "R1DM_TARGET": "r1" }
     }
   }
 }
@@ -155,7 +181,8 @@ MCP server into your client for you (that's what the [video](https://youtu.be/-g
 ## Examples vs. Gallery
 
 - **`examples/*.json`** — source specs, for driving the MCP/builder and learning the spec format.
-- **`gallery/*.zip`** — prebuilt, **ready-to-import** dashboards. Since bundles are tenant-less,
+- **`gallery/*.zip`** — prebuilt, **ready-to-import** RUCKUS One dashboards;
+  **`gallery/analytics/*.zip`** — the same boards for RUCKUS Analytics. Since bundles are tenant-less,
   they auto-rescope to whatever EC you import them into. Grab one → Data Studio → Settings →
   Import Dashboard. Current set: executive_overview, capacity_rf, connection_health,
   network_intelligence, switch_health, chart_gallery, delivered_throughput.
@@ -163,7 +190,8 @@ MCP server into your client for you (that's what the [video](https://youtu.be/-g
 
 ## Status
 
-Catalog: 18/19 datasets mapped (AP Alarms & Controller Inventory are SmartZone-only, N/A in R1).
+Catalogs: RUCKUS One 18 datasets (AP Alarms & Controller Inventory are SmartZone-only, N/A in R1);
+RUCKUS Analytics 19/19, every UUID verified by import on a live tenant (2026-09-22).
 Viz (15): bignum, bignum_trend, line, bar, area, scatter, pie, table, gauge, heatmap, funnel, pivot, mixed, tree, bubble. Query grammar: saved +
 custom-SQL metrics, percent-of-total, dimension + time filters, d3 formats. Cross-filtering is
 built in (click a chart value to filter the dashboard). Not yet: explicit dashboard-level native

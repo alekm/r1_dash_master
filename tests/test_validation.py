@@ -72,5 +72,40 @@ class DeploymentMarker(unittest.TestCase):
         self.assertIn("deployment: MLISA", self._metadata({**CATALOG, "deployment": "MLISA"}))
 
 
+class Targets(unittest.TestCase):
+    def test_every_target_has_a_loadable_tagged_catalog(self):
+        for target in builder.TARGETS:
+            with self.subTest(target=target):
+                cat = builder.load_catalog(target)
+                self.assertEqual(cat["target"], target)
+                self.assertTrue(cat["datasets"])
+
+    def test_unknown_target_is_rejected(self):
+        with self.assertRaises(ValueError):
+            builder.load_catalog("smartzone")
+
+    def test_spec_for_one_product_is_refused_by_the_others_catalog(self):
+        # The failure this guards: identical metric names mean a wrong-target spec
+        # otherwise validates clean and then binds to the other product's ids.
+        spec = _spec([[dict(CHART, title="x")]], target="r1")
+        problems = builder.validate_spec(spec, builder.load_catalog("analytics"))
+        self.assertTrue(any("catalog is for 'analytics'" in p for p in problems), problems)
+
+    def test_deployment_marker_follows_the_target(self):
+        for target, marker in (("r1", "ALTO"), ("analytics", "MLISA")):
+            with self.subTest(target=target):
+                self.assertEqual(builder.load_catalog(target)["deployment"], marker)
+
+    def test_every_dataset_carries_a_uuid_and_they_are_unique(self):
+        # A chart binds on dataset_uuid AND datasource id; import 500s if either
+        # fails to resolve (verified on Analytics with a right-id/wrong-uuid probe).
+        for target in builder.TARGETS:
+            with self.subTest(target=target):
+                ds = builder.load_catalog(target)["datasets"]
+                uuids = [d.get("dataset_uuid") for d in ds]
+                self.assertTrue(all(uuids), [d["name"] for d in ds if not d.get("dataset_uuid")])
+                self.assertEqual(len(uuids), len(set(uuids)))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

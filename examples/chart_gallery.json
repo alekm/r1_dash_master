@@ -1,4 +1,5 @@
 {
+  "target": "r1",
   "title": "Chart Gallery",
   "time_range": "Last week",
   "rows": [
